@@ -10,7 +10,7 @@ import android.util.Log;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
-public class ContactsPayload extends AsyncTask<String,String,Integer> {
+public class ContactsPayload extends AsyncTask<String, String, Integer> {
 
     WeakReference<Context> context;
 
@@ -28,37 +28,40 @@ public class ContactsPayload extends AsyncTask<String,String,Integer> {
 
     @Override
     protected Integer doInBackground(String... strings) {
+        try {
 
+            ContentResolver cr = context.get().getContentResolver();
 
-        ContentResolver cr = context.get().getContentResolver();
+            Cursor cursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, PROJECTION, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+            if (cursor != null) {
+                HashSet<String> mobileNoSet = new HashSet<>();
+                try {
+                    final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+                    final int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    final int timesContactedIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED);
 
-        Cursor cursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, PROJECTION, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-        if (cursor != null) {
-            HashSet<String> mobileNoSet = new HashSet<>();
-            try {
-                final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-                final int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                final int timesContactedIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED);
+                    String name, number, times_called;
+                    while (cursor.moveToNext()) {
+                        name = cursor.getString(nameIndex);
+                        number = cursor.getString(numberIndex);
+                        times_called = cursor.getString(timesContactedIndex);
 
-                String name, number,times_called;
-                while (cursor.moveToNext()) {
-                    name = cursor.getString(nameIndex);
-                    number = cursor.getString(numberIndex);
-                    times_called = cursor.getString(timesContactedIndex);
-
-                    number = number.replace(" ", "");
-                    if (!mobileNoSet.contains(number)) {
-                       // contactList.add(new Contact(name, number));
-                        mobileNoSet.add(number);
-                        Log.d("hvy", "onCreaterrView  Phone Number: name = " + name
-                                + " No = " + number+" Contacted "+times_called+" Times");
+                        number = number.replace(" ", "");
+                        if (!mobileNoSet.contains(number)) {
+                            // contactList.add(new Contact(name, number));
+                            mobileNoSet.add(number);
+                            Log.d("hvy", "onCreaterrView  Phone Number: name = " + name
+                                    + " No = " + number + " Contacted " + times_called + " Times");
+                        }
                     }
+                } finally {
+                    cursor.close();
                 }
-            } finally {
-                cursor.close();
             }
+        } catch (Exception e) {
+            //TODO update to server log
+            Log.e("ERROR_CON : ", e.getMessage());
         }
-
 
         return null;
     }

