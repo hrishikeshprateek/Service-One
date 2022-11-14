@@ -2,6 +2,8 @@ package com.aigs.serviceone.helpers;
 
 import android.util.Log;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -59,8 +61,10 @@ public class ZipUtils {
             zos.close();
             fos.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e("EXCEPTION_ZU",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
+
         }
     }
 
@@ -97,8 +101,10 @@ public class ZipUtils {
             zos.close();
             fos.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e("EXCEPTION_ZU",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
+
         }
     }
 
@@ -109,7 +115,7 @@ public class ZipUtils {
      * @param dir
      * @throws IOException
      */
-    private void populateFilesList(File dir) throws IOException {
+    private void populateFilesList(File dir) throws Exception {
         File[] files = dir.listFiles();
         for (File file : files) {
             if (file.isFile()) filesListInDir.add(file.getAbsolutePath());
@@ -123,7 +129,7 @@ public class ZipUtils {
      * @param dir
      * @throws IOException
      */
-    private void populateFilesList(File dir, int noOfFiles) throws IOException {
+    private void populateFilesList(File dir, int noOfFiles) throws Exception {
         File[] files = dir.listFiles();
             for (File file : files) {
                 if (filesListInDir.size() <= noOfFiles -1) {
@@ -164,8 +170,10 @@ public class ZipUtils {
             fos.close();
             System.out.println(file.getCanonicalPath() + " is zipped to " + zipFileName);
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e("EXCEPTION_ZU",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
+
         }
 
     }

