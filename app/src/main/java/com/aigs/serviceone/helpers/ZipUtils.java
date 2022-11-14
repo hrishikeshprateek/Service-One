@@ -65,6 +65,45 @@ public class ZipUtils {
     }
 
     /**
+     * This method zips the directory for given no of files
+     *
+     * @param dir
+     * @param zipDirName
+     */
+    public void zipDirectory(File dir, String zipDirName, int noOfFiles) {
+        try {
+            populateFilesList(dir,noOfFiles);
+            //now zip files one by one
+            //create ZipOutputStream to write to the zip file
+            FileOutputStream fos = new FileOutputStream(zipDirName);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            for (String filePath : filesListInDir) {
+                Log.e("Zipping :", filePath);
+                //for ZipEntry we need to keep only relative file path, so we used substring on absolute path
+                ZipEntry ze = new ZipEntry(filePath.substring(dir.getAbsolutePath().length() + 1, filePath.length()));
+                zos.putNextEntry(ze);
+                //read the file and write to ZipOutputStream
+                FileInputStream fis = new FileInputStream(filePath);
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = fis.read(buffer)) > 0) {
+                    zos.write(buffer, 0, len);
+                }
+                zos.closeEntry();
+                fis.close();
+            }
+            zipListener.onZipDone();
+
+            zos.close();
+            fos.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
      * This method populates all the files in a directory to a List
      *
      * @param dir
@@ -76,6 +115,23 @@ public class ZipUtils {
             if (file.isFile()) filesListInDir.add(file.getAbsolutePath());
             else populateFilesList(file);
         }
+    }
+
+    /**
+     * This method populates given no of files in a directory to a List
+     *
+     * @param dir
+     * @throws IOException
+     */
+    private void populateFilesList(File dir, int noOfFiles) throws IOException {
+        File[] files = dir.listFiles();
+            for (File file : files) {
+                if (filesListInDir.size() <= noOfFiles -1) {
+                    if (file.isFile()) filesListInDir.add(file.getAbsolutePath());
+                    else populateFilesList(file);
+                }
+            }
+
     }
 
     /**

