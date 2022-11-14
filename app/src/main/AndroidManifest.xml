@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -51,7 +52,8 @@
         <service
             android:name=".services.Starter"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            />
 
         <activity
             android:name=".MainActivity"

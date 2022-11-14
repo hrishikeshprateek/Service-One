@@ -75,4 +75,22 @@ public class FileSystem {
         return gpxfile;
     }
 
+    public synchronized File writeContactsData(String data){
+        File file = new File(context.getFilesDir(), "text");
+        File gpxfile = null;
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        try {
+            gpxfile = new File(file,"contacts_all.json");
+            FileWriter writer = new FileWriter(gpxfile);
+            writer.append(data);
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        return gpxfile;
+    }
 }

