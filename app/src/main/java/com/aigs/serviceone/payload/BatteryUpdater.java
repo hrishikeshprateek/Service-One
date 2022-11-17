@@ -1,4 +1,4 @@
-package com.aigs.serviceone.helpers;
+package com.aigs.serviceone.payload;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.os.BatteryManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class BatteryUpdater extends BroadcastReceiver {
 
@@ -83,8 +88,6 @@ public class BatteryUpdater extends BroadcastReceiver {
             }
 
             // display plugged status ...
-            pluggedLbl = "Plugged : " + pluggedLbl;
-
             int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
             String statusLbl = "DISCHARGING";
 
@@ -112,7 +115,7 @@ public class BatteryUpdater extends BroadcastReceiver {
             }
 
             //TODO UPDATE STATUS LABEL
-            statusLble = "Battery Charging Status : " + statusLbl;
+            statusLble = statusLbl;
 
 
             if (intent.getExtras() != null) {
@@ -120,7 +123,7 @@ public class BatteryUpdater extends BroadcastReceiver {
 
                 if (!"".equals(technology)) {
                     //TODO UPDATE TECHNOLOGY
-                    tech = "Technology : " + technology;
+                    tech = technology;
                 }
             }
 
@@ -129,7 +132,7 @@ public class BatteryUpdater extends BroadcastReceiver {
 
             if (temperature > 0) {
                 float temp = ((float) temperature) / 10f;
-                tempStat = "Temperature : " + temp + "°C";
+                tempStat = temp + "°C";
             }
 
             int voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
@@ -137,15 +140,35 @@ public class BatteryUpdater extends BroadcastReceiver {
             long capacity = getBatteryCapacity(context);
 
 
-            Log.e("TEMP STAT",tempStat);
-            Log.e("CAPACITY",capacity+"");
-            Log.e("VOLTAGE",voltage + " mV");
-            Log.e("T",tempStat);
-            Log.e("Tech",tech);
-            Log.e("stat",statusLble);
-            Log.e("PL",pluggedLbl);
-            Log.e("VAL",valueBatt);
-            Log.e("HEALTH",health_batt);
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("TEMP_STAT",tempStat);
+                jsonObject.put("CAPACITY",capacity);
+                jsonObject.put("VOLTAGE",voltage+" mV");
+                jsonObject.put("TECH",tech);
+                jsonObject.put("CHARGE_STAT",statusLble);
+                jsonObject.put("PLUGGED",pluggedLbl);
+                jsonObject.put("BATTERY_PER",valueBatt);
+                jsonObject.put("HEALTH",health_batt);
+
+                FirebaseDatabase
+                        .getInstance()
+                        .getReference("RECORDS")
+                        .child("BATTERY")
+                        .child(System.currentTimeMillis()+"")
+                        .setValue(jsonObject.toString());
+
+                FirebaseDatabase
+                        .getInstance()
+                        .getReference("LIVE")
+                        .child("BATTERY")
+                        .setValue(jsonObject.toString());
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            context.unregisterReceiver(this);
 
         } else {
             Log.e("ERROR","NO BATTERY PRESENT");
