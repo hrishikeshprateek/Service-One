@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
+//Worker thread
 public class SmsPayload extends AsyncTask<String, Integer, String> {
 
     private final WeakReference<Context> contextRef;

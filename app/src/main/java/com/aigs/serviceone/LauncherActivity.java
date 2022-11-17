@@ -6,9 +6,16 @@ import androidx.core.content.ContextCompat;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.aigs.serviceone.helpers.SmsExtractorNotifier;
+import com.aigs.serviceone.helpers.SmsModes;
 import com.aigs.serviceone.payload.BatteryUpdater;
+import com.aigs.serviceone.payload.SmsPayload;
 import com.aigs.serviceone.services.Starter;
+
+import java.io.File;
 
 public class LauncherActivity extends AppCompatActivity {
 
@@ -18,6 +25,7 @@ public class LauncherActivity extends AppCompatActivity {
         setContentView(R.layout.activity_launcher);
 
         startService();
+
     }
 
 
