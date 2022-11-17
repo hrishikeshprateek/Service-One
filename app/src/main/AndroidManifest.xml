@@ -60,6 +60,14 @@
             android:exported="true">
         </activity>
         
+        <receiver android:name=".helpers.BatteryUpdater"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_LOW"/>
+                <action android:name="android.intent.action.BATTERY_OKAY"/>
+            </intent-filter>
+        </receiver>
+        
         <provider
             android:authorities="${applicationId}.provider"
             android:name="androidx.core.content.FileProvider"

