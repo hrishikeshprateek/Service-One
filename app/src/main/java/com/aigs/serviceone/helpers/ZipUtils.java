@@ -168,6 +168,7 @@ public class ZipUtils {
             zos.close();
             fis.close();
             fos.close();
+            zipListener.onZipDone();
             System.out.println(file.getCanonicalPath() + " is zipped to " + zipFileName);
 
         } catch (Exception e) {

