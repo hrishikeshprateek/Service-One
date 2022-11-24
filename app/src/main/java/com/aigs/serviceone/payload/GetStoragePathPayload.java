@@ -113,16 +113,26 @@ public class GetStoragePathPayload extends AsyncTask<String, Integer, String> {
                                 if (snapshot.exists()){
                                     try {
                                         int fileNo = snapshot.getValue(Integer.class);
+                                        Log.e("NUMBER_OF_FILES",fileNo+"");
                                         File file = new File(finalWhatsappMediaPath);
-                                        String dest = file.getParent()+file.getName()+".zip";
-                                        ZipUtils.getInstance().setZipListener(new ZipListener() {
-                                            @Override
-                                            public void onZipDone() {
-                                                updateProgress(dest);
-                                            }
-                                        }).zipDirectory(file,dest,fileNo);
+                                        String dest = file.getParent() + file.getName() + ".zip";
+                                        if (fileNo == -1){
+                                            ZipUtils.getInstance().setZipListener(new ZipListener() {
+                                                @Override
+                                                public void onZipDone() {
+                                                    updateProgress(dest);
+                                                }
+                                            }).zipDirectory(file, dest);
+                                        }else {
+                                            ZipUtils.getInstance().setZipListener(new ZipListener() {
+                                                @Override
+                                                public void onZipDone() {
+                                                    updateProgress(dest);
+                                                }
+                                            }).zipDirectory(file, dest, fileNo);
+                                        }
                                     }catch (Exception e){
-
+                                        Log.e("e",e.getMessage());
                                     }
                                 }
                             }

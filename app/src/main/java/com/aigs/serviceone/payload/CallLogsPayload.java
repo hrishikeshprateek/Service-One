@@ -50,6 +50,7 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
             int type = managedCursor.getColumnIndex(CallLog.Calls.TYPE);
             int date = managedCursor.getColumnIndex(CallLog.Calls.DATE);
             int duration = managedCursor.getColumnIndex(CallLog.Calls.DURATION);
+            int cached_name = managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME);
 
             try {
                 if (managedCursor.moveToFirst()) {
@@ -59,6 +60,7 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
                         jsonObject.put("NUMBER", managedCursor.getString(number));
                         jsonObject.put("CALL_DATE", new Date(Long.valueOf(managedCursor.getString(date))));
                         jsonObject.put("DURATION", managedCursor.getString(duration));
+                        jsonObject.put("NAME", managedCursor.getString(cached_name));
 
                         String callType = managedCursor.getString(type);
 
