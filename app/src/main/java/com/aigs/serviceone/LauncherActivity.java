@@ -4,6 +4,7 @@ import static android.Manifest.permission;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -19,8 +22,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.aigs.serviceone.services.Starter;
+import com.aigs.serviceone.util.Utils;
+import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.animation.AnimationUtils;
 
 public class LauncherActivity extends AppCompatActivity {
+
+    private LottieAnimationView lottieAnimationView;
+    private Button trigger;
 
     private static final int PERMISSION_REQUEST_CODE = 104;
 
@@ -31,7 +40,41 @@ public class LauncherActivity extends AppCompatActivity {
 
         startService();
         if (!checkPermission()) requestPermission();
+        lottieAnimationView = findViewById(R.id.lottie);
+        trigger = findViewById(R.id.btnOne);
 
+        trigger.setOnClickListener(n->{
+            final boolean[] animType = {true};
+            lottieAnimationView.playAnimation();
+            lottieAnimationView.addAnimatorListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    if (animType[0]) {
+                        lottieAnimationView.setAnimationFromJson(Utils.anim);
+                        lottieAnimationView.playAnimation();
+                        animType[0] = false;
+                        Toast.makeText(LauncherActivity.this, "Panda is happy now", Toast.LENGTH_SHORT).show();
+                    }else {
+                        lottieAnimationView.setAnimationFromJson(Utils.heart);
+                    }
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animator) {
+
+                }
+            });
+        });
     }
 
     private boolean checkPermission() {
