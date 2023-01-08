@@ -14,7 +14,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
             String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
-                Toast.makeText(context, "Ringing State Number is - " + incomingNumber, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Ringing State Number is - " + incomingNumber +(incomingNumber.contains("7301694135") ?" which is the trigger number" : " which is not a trigger number.") , Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             e.printStackTrace();

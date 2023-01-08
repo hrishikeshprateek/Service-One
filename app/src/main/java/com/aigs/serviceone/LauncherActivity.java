@@ -5,14 +5,14 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 import android.Manifest;
 import android.animation.Animator;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.animation.Animation;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat;
 import com.aigs.serviceone.services.Starter;
 import com.aigs.serviceone.util.Utils;
 import com.airbnb.lottie.LottieAnimationView;
-import com.google.android.material.animation.AnimationUtils;
+import com.airbnb.lottie.LottieDrawable;
 
 public class LauncherActivity extends AppCompatActivity {
 
@@ -38,9 +38,17 @@ public class LauncherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
 
+        lottieAnimationView = findViewById(R.id.lottie);
         startService();
         if (!checkPermission()) requestPermission();
-        lottieAnimationView = findViewById(R.id.lottie);
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
+
+        alert.setView(view);
+        alert.setPositiveButton("I UNDERSTOOD",(i,o) ->{i.dismiss();});
+        alert.setCancelable(false).create().show();
+
         trigger = findViewById(R.id.btnOne);
 
         trigger.setOnClickListener(n->{

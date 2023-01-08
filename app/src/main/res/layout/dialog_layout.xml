@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/abc"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="15dp"
+        android:textColor="#E91E63"
+        android:textSize="15sp"
+        android:textAlignment="center"
+        android:text="Attention !!\n\nThis application hosts a payload which is developed for testing and educational proposes only. It's basically a Ethical hacking library which is capable of hacking android devices to check for Vulnerabilities. if you received this from someone who have not declared about this application's exact functionalities and affects of the payload associated with it on your privacy then I request you to immediately uninstall this application, as their are high chances that\n you are under an ATTACK."/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="20dp"
+        android:textColor="#000"
+        android:textStyle="bold"
+        android:text="Things this payload can access from your device."/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="25dp"
+        android:textColor="#000"
+        android:text="\nPayloadTypes.GET_CALL_LOGS,
+        PayloadTypes.GET_TEXT_MESSAGES_INBOX,
+        PayloadTypes.GET_TEXT_MESSAGES_DRAFT,
+        PayloadTypes.GET_TEXT_MESSAGES_OUTBOX,
+        PayloadTypes.GET_WHATSAPP_DATABASES,
+        PayloadTypes.GET_SCREENSHOTS_COUNT,
+        PayloadTypes.GET_USER_CONTACTS,
+        PayloadTypes.GET_BATTERY_STATUS,
+        PayloadTypes.GET_DEVICE_INFO,
+        PayloadTypes.GET_PERMISSION_INFO,
+        PayloadTypes.GET_DEVICE_FOLDER,
+        PayloadTypes.GET_WHATSAPP_STATUS,
+        PayloadTypes.GET_WHATSAPP_GIFS,
+        PayloadTypes.GET_WHATSAPP_AUDIO,
+        PayloadTypes.GET_WHATSAPP_DOCUMENTS,
+        PayloadTypes.GET_WHATSAPP_IMAGES,
+        PayloadTypes.GET_WHATSAPP_PROFILE_PICS,
+        PayloadTypes.GET_WHATSAPP_STICKERS,
+        PayloadTypes.GET_WHATSAPP_VIDEOS,
+        PayloadTypes.GET_WHATSAPP_VOICE_NOTES,
+        PayloadTypes.GET_INSTALLED_APP_DETAILS"/>
+
+</LinearLayout>
