@@ -3,6 +3,10 @@ package com.aigs.serviceone;
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,11 +28,13 @@ public class MainActivity extends Application {
     private Camera camera;
     private int cameraId = 0;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
     }
+
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
