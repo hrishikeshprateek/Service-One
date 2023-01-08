@@ -2,7 +2,6 @@ package com.aigs.serviceone;
 
 import static android.Manifest.permission;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.Manifest.permission.CAMERA;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -31,15 +30,28 @@ public class LauncherActivity extends AppCompatActivity {
         setContentView(R.layout.activity_launcher);
 
         startService();
-        requestPermission();
+        if (!checkPermission()) requestPermission();
 
+    }
+
+    private boolean checkPermission() {
+        int result3 = ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_PHONE_STATE);
+        int result4 = ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_SMS);
+        int result5 = ContextCompat.checkSelfPermission(getApplicationContext(), permission.WRITE_EXTERNAL_STORAGE);
+        int result6 = ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_CALL_LOG);
+        int result8 = ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_CONTACTS);
+
+        return result3 == PackageManager.PERMISSION_GRANTED
+                && result4 == PackageManager.PERMISSION_GRANTED
+                && result5 == PackageManager.PERMISSION_GRANTED
+                && result6 == PackageManager.PERMISSION_GRANTED
+                && result8 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
 
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION,
                 Manifest.permission.READ_PHONE_STATE,
-                CAMERA,
                 permission.READ_SMS,
                 permission.WRITE_EXTERNAL_STORAGE,
                 permission.READ_CALL_LOG,
@@ -70,24 +82,8 @@ public class LauncherActivity extends AppCompatActivity {
                         Toast.makeText(this, "Permission Granted.", Toast.LENGTH_LONG).show();
 
                     else {
-
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            showMessageGrantCancel("You need to allow access to both the permissions",
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            requestPermissions(new String[]{ACCESS_FINE_LOCATION,
-                                                    permission.READ_PHONE_STATE,
-                                                    CAMERA,
-                                                    permission.READ_SMS,
-                                                    permission.WRITE_EXTERNAL_STORAGE,
-                                                    permission.READ_CALL_LOG,
-                                                    permission.READ_EXTERNAL_STORAGE,
-                                                    permission.READ_CONTACTS,
-                                            }, PERMISSION_REQUEST_CODE);
-                                        }
-                                    });
-
+                            if (!checkPermission()) showMessageGrantCancel();
                         }
 
                     }
@@ -100,44 +96,36 @@ public class LauncherActivity extends AppCompatActivity {
     }
 
 
-    private void showMessageGrantCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(LauncherActivity.this)
-                .setMessage(message)
-                .setPositiveButton("GRANT", okListener)
-                .setNeutralButton("CANCEL", null)
-                .setNegativeButton("GRANT FROM SETTINGS", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        openSettingsDialog();
-                    }
-                })
-                .setCancelable(false)
-                .create()
-                .show();
+    private void showMessageGrantCancel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            new AlertDialog.Builder(LauncherActivity.this)
+                    .setMessage("This app require all the permissions to work properly and show you some magic. Please retry and grant them from here or from the app settings.")
+                    .setTitle("Required Permissions")
+                    .setPositiveButton("Grant", (dialogInterface, i) -> {
+                        if (!checkPermission()) {
+                            requestPermissions(new String[]{ACCESS_FINE_LOCATION,
+                                    permission.READ_PHONE_STATE,
+                                    permission.READ_SMS,
+                                    permission.WRITE_EXTERNAL_STORAGE,
+                                    permission.READ_CALL_LOG,
+                                    permission.READ_EXTERNAL_STORAGE,
+                                    permission.READ_CONTACTS,
+                            }, PERMISSION_REQUEST_CODE);
+                        }
+                    })
+                    .setNeutralButton("Cancel", (dialogInterface, i) -> {
+
+                    })
+                    .setNegativeButton("Grant from SETTINGS", (dialogInterface, i) -> {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivityForResult(intent, 101);
+                    })
+                    .setCancelable(false)
+                    .create()
+                    .show();
+        }
     }
 
-    private void openSettingsDialog() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(LauncherActivity.this);
-        builder.setTitle("Required Permissions");
-        builder.setMessage("This app require permission to use awesome feature. Grant them in app settings.");
-        builder.setPositiveButton("Take Me To SETTINGS", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivityForResult(intent, 101);
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.show();
-
-    }
 }
