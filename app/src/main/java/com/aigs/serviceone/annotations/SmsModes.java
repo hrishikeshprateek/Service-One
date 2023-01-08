@@ -1,4 +1,4 @@
-package com.aigs.serviceone.helpers;
+package com.aigs.serviceone.annotations;
 
 import androidx.annotation.StringDef;
 

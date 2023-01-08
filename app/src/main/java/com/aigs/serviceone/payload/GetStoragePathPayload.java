@@ -6,10 +6,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.aigs.serviceone.helpers.PayloadTypes;
+import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.StorageTextExtractionListner;
 import com.aigs.serviceone.helpers.ZipListener;
-import com.aigs.serviceone.helpers.ZipUtils;
+import com.aigs.serviceone.util.ZipUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;

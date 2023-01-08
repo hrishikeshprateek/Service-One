@@ -8,9 +8,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.aigs.serviceone.helpers.FileSystem;
-import com.aigs.serviceone.helpers.PayloadTypes;
+import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
-import com.aigs.serviceone.helpers.SmsModes;
+import com.aigs.serviceone.annotations.SmsModes;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;

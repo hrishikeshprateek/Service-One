@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.aigs.serviceone.helpers.ContactsPayloadListner;
 import com.aigs.serviceone.helpers.FileSystem;
-import com.aigs.serviceone.helpers.PayloadTypes;
+import com.aigs.serviceone.annotations.PayloadTypes;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;

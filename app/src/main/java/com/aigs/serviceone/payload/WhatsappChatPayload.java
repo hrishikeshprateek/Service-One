@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.aigs.serviceone.helpers.PayloadTypes;
+import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
-import com.aigs.serviceone.helpers.ZipUtils;
+import com.aigs.serviceone.util.ZipUtils;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
