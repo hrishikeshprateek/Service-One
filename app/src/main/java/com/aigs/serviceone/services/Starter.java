@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,12 +64,15 @@ public class Starter extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");
 
+        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small);
+
         Intent notificationIntent = new Intent(this, Starter.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
         Notification notification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setContentTitle("Auto Start Service")
                 .setContentText(input)
+                .setCustomContentView(notificationLayout)
                 .setColor(Color.TRANSPARENT)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(pendingIntent)
