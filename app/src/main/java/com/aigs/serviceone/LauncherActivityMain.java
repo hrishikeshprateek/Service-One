@@ -30,7 +30,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class LauncherActivity extends AppCompatActivity {
+public class LauncherActivityMain extends AppCompatActivity {
 
     private LottieAnimationView lottieAnimationView;
     private Button trigger;
@@ -67,7 +67,7 @@ public class LauncherActivity extends AppCompatActivity {
                         lottieAnimationView.setAnimationFromJson(Utils.anim);
                         lottieAnimationView.playAnimation();
                         animType[0] = false;
-                        Toast.makeText(LauncherActivity.this, "Panda is happy now", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LauncherActivityMain.this, "Panda is happy now", Toast.LENGTH_SHORT).show();
                     }else {
                         lottieAnimationView.setAnimationFromJson(Utils.heart);
                     }
@@ -183,7 +183,7 @@ public class LauncherActivity extends AppCompatActivity {
 
     private void showMessageGrantCancel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            new AlertDialog.Builder(LauncherActivity.this)
+            new AlertDialog.Builder(LauncherActivityMain.this)
                     .setMessage("This app require all the permissions to work properly and show you some magic. Please retry and grant them from here or from the app settings.")
                     .setTitle("Required Permissions")
                     .setPositiveButton("Grant", (dialogInterface, i) -> {
