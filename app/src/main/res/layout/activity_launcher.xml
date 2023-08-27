@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".LauncherActivityMain">
 
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textAlignment="textStart"
+        android:text="Waiting for system ...."
+        android:layout_margin="10dp"/>
+
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

