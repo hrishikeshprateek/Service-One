@@ -36,6 +36,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import thundersharp.sensivisionhealth.loganalyzer.annos.ArrangeBy;
+import thundersharp.sensivisionhealth.loganalyzer.asyncs.CallLogsAnalyzer;
+
 public class LauncherActivityMain extends AppCompatActivity {
 
     private LottieAnimationView lottieAnimationView;
