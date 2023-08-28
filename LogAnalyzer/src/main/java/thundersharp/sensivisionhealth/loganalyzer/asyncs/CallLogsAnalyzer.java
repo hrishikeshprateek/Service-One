@@ -148,6 +148,6 @@ public class CallLogsAnalyzer extends AsyncTask<String,Void, String> {
         }catch (Exception e){
             onCallLogsAnalyzed.onFailedToAnalyze(new AnalyzeException(e));
         }
-        return null;
+        return "com";
     }
 }
