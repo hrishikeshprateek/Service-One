@@ -7,12 +7,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import thundersharp.sensivisionhealth.loganalyzer.annos.ArrangeBy;
 import thundersharp.sensivisionhealth.loganalyzer.annos.OperationModes;
 import thundersharp.sensivisionhealth.loganalyzer.errors.AnalyzeException;
 import thundersharp.sensivisionhealth.loganalyzer.interfaces.OnCallLogsAnalyzed;
+import thundersharp.sensivisionhealth.loganalyzer.models.GeneralLogOutput;
 import thundersharp.sensivisionhealth.loganalyzer.models.RawLogHolder;
 
 public class CallLogsAnalyzer extends AsyncTask<String,Void, String> {
@@ -22,7 +25,7 @@ public class CallLogsAnalyzer extends AsyncTask<String,Void, String> {
     private @ArrangeBy int arrangeBy;
     private String queryPhoneNo;
     private @OperationModes Integer operationMode;
-    private List<RawLogHolder> callLogEntity;
+    private Map<String, GeneralLogOutput> callLogEntity;
 
     public static CallLogsAnalyzer getCallLogsAnalyzer(){
         if (callLogsAnalyzer == null) new CallLogsAnalyzer();
@@ -30,7 +33,7 @@ public class CallLogsAnalyzer extends AsyncTask<String,Void, String> {
     }
 
     public CallLogsAnalyzer() {
-        callLogEntity = new ArrayList<>();
+        callLogEntity = new LinkedHashMap<>();
     }
 
     public CallLogsAnalyzer setOnCallLogsAnalyzedListener(OnCallLogsAnalyzed onCallLogsAnalyzed){
@@ -67,11 +70,24 @@ public class CallLogsAnalyzer extends AsyncTask<String,Void, String> {
             onCallLogsAnalyzed.onProgress("Parsing logs...");
             for (int i = 0; i <=jsonObject.length(); i++){
                 JSONObject individualCallRecord = jsonObject.getJSONObject(i);
-                callLogEntity.add(new RawLogHolder(individualCallRecord.getString("NUMBER"),
-                        individualCallRecord.getString("CALL_DATE"),
-                        individualCallRecord.getString("DURATION"),
-                        individualCallRecord.getString("NAME"),
-                        individualCallRecord.getString("CALL_TYPE")));
+                if (individualCallRecord.has("NUMBER") && individualCallRecord.has("DURATION")) {
+                    GeneralLogOutput output = callLogEntity.get(individualCallRecord.getString("NAME"));
+                    if (output != null) {
+                        //Update entry
+
+                    }else {
+                        //new Entry
+                        String phoneWithoutCountryCode = individualCallRecord.getString("NUMBER").replace("+91","");
+                        boolean isIncoming = individualCallRecord.getString("CALL_TYPE").equalsIgnoreCase("INCOMING");
+                        callLogEntity.put(phoneWithoutCountryCode,
+                                new GeneralLogOutput(phoneWithoutCountryCode,
+                                        1,
+                                        Long.parseLong(individualCallRecord.getString("DURATION")),
+                                        individualCallRecord.getString("NAME"),
+                                        isIncoming ? 1 : 0,
+                                        isIncoming ? 0 : 1));
+                    }
+                }
             }
             onCallLogsAnalyzed.onProgress("Logs parsed successfully...");
 
