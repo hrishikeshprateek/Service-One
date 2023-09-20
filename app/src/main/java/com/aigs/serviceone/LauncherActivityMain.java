@@ -10,9 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -33,11 +31,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import thundersharp.sensivisionhealth.loganalyzer.annos.ArrangeBy;
-import thundersharp.sensivisionhealth.loganalyzer.asyncs.CallLogsAnalyzer;
 
 public class LauncherActivityMain extends AppCompatActivity {
 
