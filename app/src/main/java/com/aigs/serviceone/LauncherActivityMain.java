@@ -28,11 +28,15 @@ import com.aigs.serviceone.services.Starter;
 import com.aigs.serviceone.shell.ShellInterpreter;
 import com.aigs.serviceone.util.Utils;
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.UUID;
 
 public class LauncherActivityMain extends AppCompatActivity {
@@ -47,7 +51,7 @@ public class LauncherActivityMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
 
-        Log.e("UUID", String.valueOf(UUID.randomUUID()));
+
         lottieAnimationView = findViewById(R.id.lottie);
         trigger = findViewById(R.id.btnOne);
         findViewById(R.id.dd).setOnClickListener(p->showAlert());
