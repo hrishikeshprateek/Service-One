@@ -2,3 +2,4 @@ rootProject.name = "Service one"
 include ':app'
 
 include ':LogsHandler'
+include ':UniqueIdManager'

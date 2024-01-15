@@ -12,6 +12,7 @@ import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.annotations.SmsModes;
 import com.example.logshandler.starter.LogsHandler;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
