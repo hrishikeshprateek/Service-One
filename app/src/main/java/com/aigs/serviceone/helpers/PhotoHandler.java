@@ -6,6 +6,9 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -47,6 +50,8 @@ public class PhotoHandler implements Camera.PictureCallback {
             fos.close();
             Toast.makeText(context, "New Image saved:" + photoFile, Toast.LENGTH_LONG).show();
         } catch (Exception error) {
+            Logs.pushLogsToServer("[ERROR]: File" + filename + "not saved: "
+                    + error.getMessage(), UniqueId.initialize(context).getUUID());
             Log.d("MakePhotoActivity", "File" + filename + "not saved: "
                     + error.getMessage());
             Toast.makeText(context, "Image could not be saved.", Toast.LENGTH_LONG).show();

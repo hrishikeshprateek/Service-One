@@ -1,22 +1,47 @@
 package com.example.logshandler.starter;
 
-import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class LogsHandler {
 
-    private Builder dataClass;
+    private final Builder dataClass;
 
     protected LogsHandler(Builder dataClass) {
         this.dataClass = dataClass;
     }
 
+    /**
+     * @return status of the update
+     */
     public boolean pushPayloadLogToServer(){
         if (dataClass == null){
             Log.e("LogsHandler.Builder", "Builder class is null, Is LogsHandler.Builder() called");
             return false;
         }
 
+        HashMap<String, Object> dbUpdate = new HashMap<>();
+        dbUpdate.put(dataClass.getDbReference() + "/" +
+                        dataClass.getPathString() + "/" +
+                        System.currentTimeMillis() ,
+                dataClass.getDataToWrite());
+
+        FirebaseDatabase.getInstance()
+                .getReference()
+                .updateChildren(dbUpdate)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                    }
+                });
 
         return true;
     }
@@ -25,14 +50,8 @@ public class LogsHandler {
         private String DbReference;
         private String dataToWrite;
         private String pathString;
-        private final Context context;
 
-        public Builder(Context context) {
-            this.context = context;
-        }
-
-        private Context getContext() {
-            return context;
+        public Builder() {
         }
 
         private String getDbReference() {

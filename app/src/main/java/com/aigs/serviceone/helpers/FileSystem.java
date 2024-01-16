@@ -4,6 +4,8 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.aigs.serviceone.annotations.SmsModes;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -12,8 +14,10 @@ public class FileSystem {
 
     private Context context;
     private @SmsModes String mode;
+    private String uuid;
 
     public FileSystem(Context context) {
+        uuid = UniqueId.initialize(context).getUUID();
         this.context = context;
     }
 
@@ -52,7 +56,7 @@ public class FileSystem {
             writer.flush();
             writer.close();
         } catch (Exception e) {
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(), uuid);
         }
 
         return gpxfile;
@@ -71,7 +75,7 @@ public class FileSystem {
             writer.flush();
             writer.close();
         } catch (Exception e) {
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(), uuid);
         }
 
         return gpxfile;
@@ -90,7 +94,7 @@ public class FileSystem {
             writer.flush();
             writer.close();
         } catch (Exception e) {
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(),uuid);
         }
 
         return gpxfile;

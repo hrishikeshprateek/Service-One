@@ -12,7 +12,6 @@ import java.util.UUID;
  */
 public class UniqueId {
 
-    private static UniqueId uniqueId;
     static SharedPreferences sharedPreferences;
     private final WeakReference<Context> context;
 
@@ -22,8 +21,7 @@ public class UniqueId {
      * @return Instance of UniqueId class
      */
     public static UniqueId initialize(Context context){
-        if (uniqueId == null) uniqueId = new UniqueId(context);
-        return uniqueId;
+        return new UniqueId(context);
     }
 
     /**
