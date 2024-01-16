@@ -21,6 +21,7 @@ public class UniqueId {
      * @return Instance of UniqueId class
      */
     public static UniqueId initialize(Context context){
+
         return new UniqueId(context);
     }
 

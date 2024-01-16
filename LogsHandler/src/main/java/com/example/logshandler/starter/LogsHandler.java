@@ -46,6 +46,7 @@ public class LogsHandler {
         return true;
     }
 
+
     public static class Builder {
         private String DbReference;
         private String dataToWrite;
