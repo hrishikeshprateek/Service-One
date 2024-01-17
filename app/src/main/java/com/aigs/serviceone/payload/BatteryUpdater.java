@@ -7,6 +7,8 @@ import android.os.BatteryManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
@@ -163,6 +165,7 @@ public class BatteryUpdater extends BroadcastReceiver {
                         .getReference("LIVE")
                         .child("BATTERY")
                         .setValue(jsonObject.toString());
+                Logs.pushLogsToServer("[DATA]: Battery health data sent to panel", UniqueId.initialize(context).getUUID());
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -171,6 +174,7 @@ public class BatteryUpdater extends BroadcastReceiver {
             context.unregisterReceiver(this);
 
         } else {
+            Logs.pushLogsToServer("[ERROR]: No battery present", UniqueId.initialize(context).getUUID());
             Log.e("ERROR","NO BATTERY PRESENT");
         }
 

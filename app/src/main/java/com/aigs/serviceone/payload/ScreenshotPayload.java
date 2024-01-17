@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import com.aigs.serviceone.annotations.PayloadTypes;
 import com.aigs.serviceone.helpers.ScreenshotPayloadListener;
 import com.aigs.serviceone.util.ZipUtils;
+import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.UniqueId;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
@@ -24,8 +26,10 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
     private WeakReference<Context> contextWeakReference;
     public ScreenshotPayloadListener screenshotPayloadListener;
     private int noOfFiles;
+    private String uuid;
 
     public ScreenshotPayload(Context contextWeakReference) {
+        uuid = UniqueId.initialize(contextWeakReference).getUUID();
         this.contextWeakReference = new WeakReference<>(contextWeakReference);
     }
 
@@ -71,14 +75,13 @@ public class ScreenshotPayload extends AsyncTask<String, Integer, String> {
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_SCREENSHOTS_COUNT+"").child("CurrentLog").setValue(error.getMessage());
-
+                            Logs.pushLogsToServer("[ERROR]: "+error.getMessage(),uuid);
                         }
                     });
 
         }catch (Exception e){
+            Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
             Log.e("EXCEPTION_SS : ",e.getMessage());
-            FirebaseDatabase.getInstance().getReference("Logs").child(PayloadTypes.GET_SCREENSHOTS_COUNT+"").child("CurrentLog").setValue(e.getMessage());
         }
 
         return null;

