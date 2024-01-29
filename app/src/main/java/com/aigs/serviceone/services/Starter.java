@@ -41,6 +41,7 @@ import com.aigs.serviceone.payload.WhatsappChatPayload;
 import com.example.logshandler.starter.Logs;
 import com.example.uniqueidmanager.DeviceIdentifier;
 import com.example.uniqueidmanager.UniqueId;
+import com.example.uniqueidmanager.model.UUIDInstance;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -90,6 +91,12 @@ public class Starter extends Service {
             new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID);
         }
         startForeground(1, notification);
+
+        DeviceIdentifier
+                .getInstance(this)
+                .updateUUIDEntry(new UUIDInstance( UniqueId.initialize(this).getUUID(),
+                        String.valueOf(System.currentTimeMillis()),
+                        DeviceIdentifier.getInstance(this).getAccountName()));
 
         FirebaseDatabase
                 .getInstance()
