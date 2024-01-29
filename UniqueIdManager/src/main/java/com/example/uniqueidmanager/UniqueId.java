@@ -30,7 +30,7 @@ public class UniqueId {
      */
     protected UniqueId(Context context) {
         this.context = new WeakReference<>(context);
-        sharedPreferences = context.getSharedPreferences("UUID",Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("UUID_STORE",Context.MODE_PRIVATE);
     }
 
     public String getUUID(){
@@ -39,7 +39,12 @@ public class UniqueId {
     }
 
     private String generateUUIDNow(){
-        return UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.putString("UUID",uuid);
+        editor.apply();
+        return uuid;
     }
 
     public Context getContext() {
