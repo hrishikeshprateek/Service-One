@@ -28,6 +28,7 @@ import com.aigs.serviceone.services.Starter;
 import com.aigs.serviceone.shell.ShellInterpreter;
 import com.aigs.serviceone.util.Utils;
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.uniqueidmanager.DeviceIdentifier;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -50,7 +51,6 @@ public class LauncherActivityMain extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
-
 
         lottieAnimationView = findViewById(R.id.lottie);
         trigger = findViewById(R.id.btnOne);
@@ -120,6 +120,8 @@ public class LauncherActivityMain extends AppCompatActivity {
                         startService();
                     }
                 });
+
+        Toast.makeText(this, DeviceIdentifier.getInstance(LauncherActivityMain.this).getAccountName(), Toast.LENGTH_SHORT).show();
     }
 
     private void showAlert() {

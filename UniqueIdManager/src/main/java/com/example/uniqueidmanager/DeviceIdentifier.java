@@ -16,11 +16,14 @@ public class DeviceIdentifier {
     }
 
     public static DeviceIdentifier getInstance(Context context){
-        return instance.get() == null ? new DeviceIdentifier(context) : instance.get();
+        if (instance == null || instance.get() == null) {
+            instance = new WeakReference<>(new DeviceIdentifier(context));
+        }
+        return instance.get();
     }
 
 
-    private String getAccountName(){
+    public String getAccountName(){
         Account[] accounts = getAccounts();
         return (accounts.length > 0) ? accounts[0].name : "null";
     }

