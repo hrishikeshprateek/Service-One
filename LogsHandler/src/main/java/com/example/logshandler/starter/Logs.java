@@ -3,7 +3,7 @@ package com.example.logshandler.starter;
 import java.util.Objects;
 
 /**
- *
+ * @author hrishikeshprateek
  */
 public abstract class Logs {
 
