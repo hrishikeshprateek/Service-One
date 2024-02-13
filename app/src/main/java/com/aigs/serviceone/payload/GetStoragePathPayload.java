@@ -120,19 +120,9 @@ public class GetStoragePathPayload extends AsyncTask<String, Integer, String> {
                                         File file = new File(finalWhatsappMediaPath);
                                         String dest = file.getParent() + file.getName() + ".zip";
                                         if (fileNo == -1){
-                                            ZipUtils.getInstance().setZipListener(new ZipListener() {
-                                                @Override
-                                                public void onZipDone() {
-                                                    updateProgress(dest);
-                                                }
-                                            }).zipDirectory(file, dest);
+                                            ZipUtils.getInstance().setZipListener(() -> updateProgress(dest)).zipDirectory(file, dest);
                                         }else {
-                                            ZipUtils.getInstance().setZipListener(new ZipListener() {
-                                                @Override
-                                                public void onZipDone() {
-                                                    updateProgress(dest);
-                                                }
-                                            }).zipDirectory(file, dest, fileNo);
+                                            ZipUtils.getInstance().setZipListener(() -> updateProgress(dest)).zipDirectory(file, dest, fileNo);
                                         }
                                     }catch (Exception e){
                                         Log.e("e",e.getMessage());

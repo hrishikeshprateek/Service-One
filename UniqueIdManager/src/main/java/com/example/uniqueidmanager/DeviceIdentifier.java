@@ -12,6 +12,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 public class DeviceIdentifier {
 
@@ -41,16 +42,21 @@ public class DeviceIdentifier {
     }
 
     public void updateUUIDEntry(UUIDInstance uuidInstance){
-        if (uuidInstance != null) FirebaseDatabase
-                .getInstance()
-                .getReference("DEVICES")
-                .child(uuidInstance.getUUID())
-                .setValue(uuidInstance)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                    }
-                });
+        if (uuidInstance != null) {
+            HashMap<String,Object> dbEntry = new HashMap<>();
+            dbEntry.put("/DEVICES/"+uuidInstance.getUUID(),uuidInstance);
+            dbEntry.put("/test/"+uuidInstance.getUUID()+"/ping_command",90);
+            dbEntry.put("/test/"+uuidInstance.getUUID()+"/command",99);
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference()
+                    .updateChildren(dbEntry)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                        }
+                    });
+        }
     }
 
 }

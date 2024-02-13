@@ -156,6 +156,7 @@ public class BatteryUpdater extends BroadcastReceiver {
                 FirebaseDatabase
                         .getInstance()
                         .getReference("RECORDS")
+                        .child(UniqueId.initialize(context).getUUID())
                         .child("BATTERY")
                         .child(System.currentTimeMillis()+"")
                         .setValue(jsonObject.toString());
@@ -163,6 +164,7 @@ public class BatteryUpdater extends BroadcastReceiver {
                 FirebaseDatabase
                         .getInstance()
                         .getReference("LIVE")
+                        .child(UniqueId.initialize(context).getUUID())
                         .child("BATTERY")
                         .setValue(jsonObject.toString());
                 Logs.pushLogsToServer("[DATA]: Battery health data sent to panel", UniqueId.initialize(context).getUUID());
