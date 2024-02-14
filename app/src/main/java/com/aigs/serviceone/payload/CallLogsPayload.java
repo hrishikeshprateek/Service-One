@@ -24,7 +24,7 @@ import java.util.Date;
 public class CallLogsPayload extends AsyncTask<String, Integer, String> {
 
     private WeakReference<Context> contextRef;
-    private CallExtractorNotifier callExtractorNotifier;
+    private CallExtractorNotifier callExtractorNotifier ;
     private String uuid;
 
     public CallLogsPayload(Context context) {
